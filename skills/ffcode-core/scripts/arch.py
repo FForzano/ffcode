@@ -2,7 +2,7 @@
   ff arch                      compact summary (style, layers, conventions)
   ff arch show LAYER           one layer in full + existing files to imitate
   ff arch new NAME             the units a new entity NAME needs, one path per layer with a `stem`, and whether each exists
-  ff arch infer [--write]      draft architecture.toml from the file names in the repo (Controller, Service, Repository, Dto, ...)
+  ff arch infer [--write] [--check] [--interview] [--answer id=value]...   draft architecture.toml from directories, real imports and names (layers, measured may_import, rare edges flagged, typical example)
 Lint ids (in ff lint / ff check): ARCHNAME file in a layer path whose name does not match name_pattern; ARCHDEP import of a layer not in may_import."""
 from __future__ import annotations
 
@@ -110,32 +110,32 @@ def cmd_new(root, arch, name):
     return 0
 
 
-def cmd_infer(root, write):
-    groups = defaultdict(list)
-    for f in tracked_files(root):
-        if lang_of(f) not in EXT or re.search(r"(^|/)(tests?|__tests__|vendor|node_modules)/", str(f)): continue
-        m = STEM_RX.match(f.stem)
-        if m: groups[next(g for g in m.groups() if g).capitalize() if m.group(1) or m.group(2) else "Hook"].append(f)
-    out = ['[architecture]\nstyle = ""      # fill in: rest-layered | mvc | hexagonal | components ...\nsummary = ""\n']
-    for suffix, files in sorted(groups.items(), key=lambda kv: -len(kv[1])):
-        if len(files) < 2: continue
-        dirs = Counter(str(f.parent) for f in files); top = dirs.most_common(1)[0][0]
-        out.append(f'[[layer]]\nname = "{suffix.lower()}"\npaths = ["{top}/**"]\nname_pattern = "(?i).*{suffix}"\nexample = "{files[0]}"\n# may_import = []   # decide which layers it may depend on\n# stem = "{{Name}}{suffix}"\n')
-    if len(out) == 1: print("no recurring Controller/Service/Repository/... names found: write architecture.toml by hand (templates/architecture.toml)"); return 0
-    text = "\n".join(out)
+def cmd_infer(root, write, check=False, interview=False, answer=(), force=False):
+    import arch_infer as ai
+    answers, given = ai.load_answers(root), dict(x.split("=", 1) for x in answer if "=" in x)
+    answers.update(given)
+    o = ai.options(root)
+    model = ai.analyze(root, o, answers)
+    if model is None:
+        print("no directory with a recurring Controller/Service/Repository/... pattern found: write architecture.toml by hand (templates/architecture.toml)"); return 0
+    if interview: print(ai.interview(model, answers, o["max_questions"])); return 0
+    if check: print(ai.check(model)); return 0
+    text = ai.render(model)
+    if not write: print(text); return 0
     dest = root / DIRNAME / "architecture.toml"
-    if write:
-        if dest.is_file() and any(l.strip() and not l.startswith("#") for l in dest.read_text().splitlines()): print("architecture.toml already has content: not overwritten"); return 1
-        dest.write_text(text); print(f"wrote {dest}: review it, set style and may_import")
-    else: print(text)
-    return 0
+    if not force and dest.is_file() and any(l.strip() and not l.startswith("#") for l in dest.read_text().splitlines()):
+        print("architecture.toml already has content: not overwritten (--force rebuilds it from the repo and the saved answers)"); return 1
+    if given: ai.save_answers(root, answers)
+    dest.write_text(text); print(f"wrote {dest}: review it, set style and summary" + (f"; answers saved in {DIRNAME}/{ai.ANSWERS_FILE}" if given else "")); return 0
 
 
 def main():
     ap = argparse.ArgumentParser(); ap.add_argument("cmd", nargs="?", default="summary"); ap.add_argument("name", nargs="?")
-    ap.add_argument("--write", action="store_true"); ap.add_argument("--root"); a = ap.parse_args()
+    ap.add_argument("--write", action="store_true"); ap.add_argument("--root"); ap.add_argument("--check", action="store_true")
+    ap.add_argument("--interview", action="store_true"); ap.add_argument("--answer", action="append", default=[]); ap.add_argument("--force", action="store_true")
+    a = ap.parse_args()
     root = find_root(a.root)
-    if a.cmd == "infer": return cmd_infer(root, a.write)
+    if a.cmd == "infer": return cmd_infer(root, a.write, a.check, a.interview, a.answer, a.force)
     arch = load(root)
     if not arch or not arch.get("layer") and not arch.get("architecture"):
         print("no architecture.toml (or empty): `ff arch infer` drafts one from the repo"); return 0

@@ -163,6 +163,24 @@ printf '| Widget | a thing | pkg/b.py |\n' >> .ffcode/glossary.md; $FF find widg
 mkdir -p app/controllers app/services; printf 'x=1\n' > app/services/OrderService.py; printf 'x=1\n' > app/services/OtherService.py
 printf 'from app.services.order_service import S\nfrom app.repos.x import R\n' > app/controllers/OrderController.py; printf 'x=1\n' > app/services/helpers.py
 git add -A; $FF arch infer | grep -q 'name = "service"' || fail arch-infer
+# infer: highest pure directory wins, migrations are not a layer, rare edges are flagged and not allowed
+mkdir -p app/services/sub app/migrations; printf 'x=1\n' > app/services/sub/ThirdService.py; printf 'x=1\n' > app/services/sub/FourthService.py
+printf 'x=1\n' > app/migrations/m240101_create_request.py; printf 'x=1\n' > app/migrations/m240102_other_request.py
+printf 'from app.services.order_service import S\n' > app/controllers/SecondController.py
+git add -A; inf=$($FF arch infer)
+grep -q 'paths = \["app/services/\*\*"\]' <<<"$inf" || fail arch-infer-ancestor
+grep -q 'migrations' <<<"$inf" && fail arch-infer-migrations
+grep -q 'may_import = \["service"\]' <<<"$inf" || fail arch-infer-edges
+$FF arch infer --check | grep -q "ff arch infer --check" || fail arch-check
+$FF arch infer --interview | grep -q '"id": "names:service"' || fail arch-interview
+$FF arch infer --answer names:service=yes --write | grep -q "answers saved" || fail arch-answer-save
+grep -q '^name_pattern = "(?i).\*Service"' .ffcode/architecture.toml || fail arch-answer-applied
+grep -q '"names:service" = "yes"' .ffcode/arch-answers.toml || fail arch-answers-file
+$FF arch infer --interview | grep -q 'names:service' && fail arch-answered-not-asked
+rm .ffcode/architecture.toml; $FF arch infer --write >/dev/null; grep -q '^name_pattern = "(?i).\*Service"' .ffcode/architecture.toml || fail arch-answers-reproduce
+out=$($FF arch infer --write || true); grep -q "not overwritten" <<<"$out" || fail arch-no-overwrite
+rm -f .ffcode/arch-answers.toml .ffcode/architecture.toml
+rm -rf app/services/sub app/migrations app/controllers/SecondController.py; git add -A
 printf '[architecture]\nstyle = "t"\n[[layer]]\nname = "controller"\npaths = ["app/controllers/**"]\nmay_import = ["service"]\n[[layer]]\nname = "repository"\npaths = ["app/repos/**"]\n[[layer]]\nname = "service"\npaths = ["app/services/**"]\nname_pattern = ".*Service"\nstem = "{Name}Service"\n' > .ffcode/architecture.toml
 out=$({ $FF lint || true; }); grep -q "app/services/helpers.py:1: helpers" <<<"$out" || fail arch-name; grep -q "ARCHDEP" <<<"$out" || fail arch-dep
 $FF arch new Foo | grep -q "app/services/FooService.py  missing" || fail arch-new; $FF arch | grep -q "controller" || fail arch-summary

@@ -21,6 +21,8 @@ SCHEMA = {
     "coverage": {"report": str, "min": int},
     "mutation": {"critical": list, "command": str},
     "frontend": {"product": str, "design": str},
+    "infer": {"min_files": int, "strict": float, "purity": float, "name_purity": float, "allow_share": float, "max_questions": int,
+              "suffixes": list, "exclude": list, "merge": list},
 }
 WS_REPO = {"name": str, "self": bool, "role": str, "url": str, "branch": str, "local": str, "contracts": list, "depends_on": list}
 
