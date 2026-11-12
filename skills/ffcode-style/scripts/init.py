@@ -57,6 +57,8 @@ def render_config(name: str, langs: list[str], cmds: dict[str, str]) -> str:
     out.append("\n[limits]  # used by ffcode lint; project overrides of the defaults")
     out += [f"{k} = {v}" for k, v in DEFAULT_LIMITS.items()]
     out.append('\n[commit]\nstyle = "conventional"  # conventional | imperative\nmax_subject = 72\n')
+    out.append('# coverage = ""   # e.g. "pytest --cov=. --cov-report=xml"; then set [coverage] report\n[coverage]\n# report = "coverage.xml"  # Cobertura, Clover or lcov\n# min = 80  # minimum diff coverage in percent\n')
+    out.append('# [mutation]  # optional, slow: areas where a surviving mutant costs money or data\n# critical = ["services/payments/**"]\n# command = "mutmut run --paths-to-mutate {files}"\n')
     out.append('[check]\nsecrets = true\nbase = "main"  # branch used for --changed\n')
     return "\n".join(out)
 

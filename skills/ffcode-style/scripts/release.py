@@ -27,10 +27,13 @@ def main():
     for r in repos:
         p = r["path"]
         if not (p / ".git").exists(): print(f"== {r['name']}: not cloned"); continue
-        frm = a.frm or r["branch"]; to = a.to or ("main" if frm != "main" else "master")
-        refs = [x for x in (to, f"origin/{to}", "master", "origin/master") if git(["rev-parse", "--verify", "-q", x], p)[0] == 0]
+        frm = a.frm or r["branch"]; alias = {"main": "master", "master": "main"}
+        to = a.to or ("main" if frm not in alias else alias[frm])
+        refs = [x for b in (to, alias.get(to, to)) for x in (b, f"origin/{b}") if git(["rev-parse", "--verify", "-q", x], p)[0] == 0]
         if not refs: print(f"== {r['name']}: no target ref"); continue
         to = refs[0]
+        if git(['rev-parse', to], p)[1] == git(['rev-parse', frm], p)[1]:
+            print(f"== {r['name']} [{r.get('role', '')}]: {frm} is the release branch, nothing to compare"); continue
         _, log = git(["log", "--no-merges", "--format=%h %s", f"{to}..{frm}"], p)
         _, files = git(["diff", "--name-status", f"{to}...{frm}"], p)
         mig = [l for l in files.splitlines() if l.startswith("A") and "migration" in l.lower()]

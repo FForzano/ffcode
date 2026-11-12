@@ -33,6 +33,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root"); ap.add_argument("--changed", action="store_true"); ap.add_argument("--staged", action="store_true")
     ap.add_argument("--only"); ap.add_argument("--lines", type=int, default=24); ap.add_argument("--no-lint", action="store_true")
+    ap.add_argument("--coverage", action="store_true", help="run [commands] coverage and report diff coverage")
     a = ap.parse_args()
     root = find_root(a.root); cfg = load_config(root)
     only = set(a.only.split(",")) if a.only else None
@@ -46,6 +47,10 @@ def main():
         args = [sys.executable, str(here / "lint.py"), "--root", str(root), "--summary"]
         args += ["--changed"] if a.changed else (["--staged"] if a.staged else [])
         t = time.time(); rc, out = run(args); results.append(("ffcode-lint", "lint.py", rc, time.time() - t, out))
+    if a.coverage:
+        here = Path(__file__).parent
+        t = time.time(); rc, out = run([sys.executable, str(here / "diffcov.py"), "--root", str(root), "--run"])
+        results.append(("diffcov", "diffcov.py --run", rc, time.time() - t, out))
     bad = 0
     for step, cmd, rc, dt, out in results:
         print(f"{'OK  ' if rc == 0 else 'FAIL'} {step:13} {dt:5.1f}s  {cmd}")

@@ -20,7 +20,10 @@ $FF lint [--changed|--staged] [--summary]   # LEN FUNC FILE PARAM DEBUG CODE TOD
 $FF check [--changed]       # configured format/lint/typecheck/test/build + ffcode lint, compressed output
 $FF commitmsg "feat(x): ..."   # validate against [commit] style
 $FF refs NAME               # all usages of a name by file (rename/impact)
-$FF untested [--base REF]   # symbols added in the diff that no test mentions
+$FF diffcov [--run] [--min N]   # added lines no test ran (Cobertura/Clover/lcov); `check --coverage` includes it
+$FF failwithout [--cmd CMD]     # do the tests fail when the production change is reverted? (restores files)
+$FF mutate [--list]             # optional mutation testing, only on changed files in [mutation] critical
+$FF untested [--base REF]   # fallback: symbols added in the diff that no test mentions (heuristic)
 $FF debug log FILE|-        # compress a log/trace; `debug bisect GOOD` runs git bisect on the test command
 $FF adr "Title"             # new decision record in .ffcode/decisions
 $FF workspace status|sync|graph|contracts   # multi-repo, see ffcode-workspace
@@ -32,7 +35,7 @@ All take `--root DIR`; the root is the nearest ancestor with `.ffcode/`, else th
 
 | File | Committed | Content |
 |---|---|---|
-| `config.toml` | yes | languages, `[commands]` (format_check, lint, typecheck, test, build; wrap docker/ssh here), `[limits]`, `[commit]`, `[check]` |
+| `config.toml` | yes | languages, `[commands]` (format_check, lint, typecheck, test, coverage, build; wrap docker/ssh here), `[limits]`, `[commit]`, `[check]`, `[coverage]` (report, min), `[mutation]` (critical globs, command) |
 | `context.md` | yes | what the project is, architecture, invariants, command list (migrated from CLAUDE.md) |
 | `style.md` | yes | deviations from the checklist by rule id + project conventions |
 | `decisions/` | yes | one short ADR per durable decision |

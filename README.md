@@ -15,7 +15,7 @@ consistency), a per-project `.ffcode/` folder, and multi-repo support.
 | `ffcode-workspace` | Multi-repo products: `.ffcode/workspace.toml`, clones under `.ffcode/repos` (git-ignored), dependency graph, contract-change tracking. |
 | `ffcode-debug` | Compress logs/traces to repo frames, reproduce with a failing test, `git bisect` on the test command, fix the cause, pin it. |
 | `ffcode-refactor` | Behaviour-preserving steps: lint finds duplicates/oversize, `refs` measures impact, characterisation tests first, one step per commit. |
-| `ffcode-test` | Missing tests for a diff (`untested`), tests that pin the rule, confirmed to fail without the change. |
+| `ffcode-test` | Missing tests for a diff: diff coverage from the real report (`diffcov`, fallback `untested`), tests that pin the rule, `failwithout` proves they fail without the change, optional `mutate` on the project's critical areas. |
 | `ffcode-release` | Multi-repo release view: commits, new migrations, contract changes per repo, deploy order, checklist. Never executes without confirmation. |
 | `ffcode-decide` | Short numbered decision records in `.ffcode/decisions`, recall before re-opening a topic. |
 

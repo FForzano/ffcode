@@ -45,6 +45,8 @@ Rules of the code style, deduced from FPC (backend, frontend, aws), OFDM-RadCom-
 - T1 [judge] New behaviour and every bug fix come with a test that fails without the change. Test the behaviour and the invariants, not the implementation.
 - T2 [judge] Unit tests for rules/calculations, integration/functional tests for endpoints and pipelines; one assertion idea per test; names say the rule.
 - T3 [judge] Deterministic: seeded randomness, injected clocks, no network. Fixtures small and local.
+- T5 [auto] Added lines are executed by tests (diff coverage ≥ `[coverage] min`), and a test added for a fix fails without the fix. [`ffcode diffcov`, `ffcode failwithout`]
+- T6 [judge] Code in `[mutation] critical` (money, data) has assertions strong enough to kill mutants: run `ffcode mutate` when it changes.
 - T4 [auto] The configured `test`, `typecheck`, `lint`, `format_check` commands pass. [`ffcode check`]
 
 ## 7. Performance and security
