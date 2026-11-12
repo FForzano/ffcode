@@ -1,8 +1,8 @@
 # UI work (loaded by ffcode-write when UI files are touched)
 
 UI is recognised, not announced: files like `*.tsx *.jsx *.vue *.svelte *.html *.css *.scss`, or `[check] ui = true` / `.ffcode/design.toml` present.
-Engineering rules stay those of `ffcode-style`; this adds a **design contract** (`.ffcode/design.toml`) that keeps the look consistent and scripts that check it.
-`FF="python3 ~/.claude/skills/ffcode-style/scripts/ffcode.py"`
+Engineering rules stay those of `ffcode-core`; this adds a **design contract** (`.ffcode/design.toml`) that keeps the look consistent and scripts that check it.
+`FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`
 
 ## 1. Orient (one call, ~40 lines)
 `$FF ui context` → stack, product notes, the contract (colour roles, type/space/radius/z scales, fonts, motion, rules), component count and most used, lint counts.

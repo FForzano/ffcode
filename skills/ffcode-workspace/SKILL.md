@@ -5,7 +5,7 @@ description: Manage and release a product made of several repositories (e.g. fro
 
 # ffcode-workspace
 
-`FF="python3 ~/.claude/skills/ffcode-style/scripts/ffcode.py"`; config `.ffcode/workspace.toml` (template: `ffcode-style/templates/workspace.toml`).
+`FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`; config `.ffcode/workspace.toml` (template: `ffcode-core/templates/workspace.toml`).
 
 ## Set up
 1. Create `.ffcode/workspace.toml`: one `[[repo]]` per repository with `name`, `url`, `role`, `depends_on`, `contracts` (paths inside that repo that other repos rely on:
@@ -17,7 +17,7 @@ description: Manage and release a product made of several repositories (e.g. fro
 
 ## Use
 - `$FF workspace status` (branch, dirty, ahead/behind), `graph` (dependencies), `where NAME` (path), `contracts [--changed]` (hash of the contract files; `CHANGED` since last run).
-- **Before changing a contract** (endpoint, DTO, schema, env var, event): list consumers via `graph`, read the consuming code with `$FF find` inside `.ffcode/repos/<consumer>` (`--root` that path after the map (`ffcode-style`) there, or plain grep for the specific name),
+- **Before changing a contract** (endpoint, DTO, schema, env var, event): list consumers via `graph`, read the consuming code with `$FF find` inside `.ffcode/repos/<consumer>` (`--root` that path after the map (`ffcode-core`) there, or plain grep for the specific name),
   and write the cross-repo plan: order of merges/deploys, backward compatibility window, docs to update. Backend-first additive changes; breaking changes only with a documented migration.
 - Do **not** edit a cloned repo unless the user asks; if asked, work in its own branch and commit there (it is a separate repository).
 - Regenerate the contract hashes after each agreed change so the next session sees a clean baseline.

@@ -5,7 +5,7 @@ description: Prepare commits and pull requests in the project's convention - run
 
 # ffcode-commit
 
-`FF="python3 ~/.claude/skills/ffcode-style/scripts/ffcode.py"`. Commit and push only when the user asked; on the main branch, branch first.
+`FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`. Commit and push only when the user asked; on the main branch, branch first.
 
 1. `git status --short` and `git diff --stat`. Unrelated changes, generated files, `.ffcode/repos/`, `.ffcode/map.md`, secrets or large binaries → leave out and say so (G2).
 2. Several logical changes → propose the split (list of files per commit) and stage with explicit paths, never `git add -A`.

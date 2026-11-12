@@ -19,7 +19,7 @@ from common import DIRNAME, die, find_root, git
 
 def load(root: Path):
     f = root / DIRNAME / "workspace.toml"
-    if not f.is_file(): die(f"no {f}; copy templates/workspace.toml from ffcode-style")
+    if not f.is_file(): die(f"no {f}; copy templates/workspace.toml from ffcode-core")
     repos = tomllib.loads(f.read_text()).get("repo", [])
     for r in repos:
         r.setdefault("branch", "main"); r.setdefault("depends_on", []); r.setdefault("contracts", [])

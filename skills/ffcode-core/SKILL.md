@@ -1,9 +1,9 @@
 ---
-name: ffcode-style
+name: ffcode-core
 description: Federico's coding style and the shared toolbox of the ffcode skills - checklist of rules (structure, single source of truth, errors, comments, tests, git), per-language notes (Python, PHP, TypeScript/React, shell/Terraform/AWS, MATLAB, HTML/CSS), the per-project .ffcode/ folder (config, context, style deviations, map, state, decisions) and the ffcode CLI (init, map, find, lint, check, commitmsg, workspace). Use when the user asks what the coding rules are, how to structure code in this project, what rule applies, or to run ffcode lint/map/find; also for navigating a repo cheaply ("mappa il repo", "dove si trova X", "aggiorna la mappa") and for recording or recalling decisions ("annotiamo questa decisione", "ADR", "perché avevamo scelto X", "scegliamo tra A e B"). The other ffcode-* skills build on this one.
 ---
 
-# ffcode-style
+# ffcode-core
 
 Rules in `references/checklist.md` (read first; ids S1, D2, E3, ... are cited in reviews and in `.ffcode/style.md`), working
 principles in `references/principles.md`, language notes in `references/lang/<language>.md` (read only those of the project:
@@ -12,7 +12,7 @@ principles in `references/principles.md`, language notes in `references/lang/<la
 ## The CLI (stdlib Python ≥ 3.11, no install)
 
 ```bash
-FF="python3 ~/.claude/skills/ffcode-style/scripts/ffcode.py"
+FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"
 $FF init                    # create .ffcode/ (detects stack and commands), never overwrites
 $FF map                     # regenerate .ffcode/map.md + symbol index (layout, entry points, symbols)
 $FF find NAME               # where is a function/class/component? file:line, instead of grepping the tree

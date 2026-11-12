@@ -5,7 +5,7 @@ description: Mechanical pass/fail check of code changes, no judgment and no edit
 
 # ffcode-check
 
-`FF="python3 ~/.claude/skills/ffcode-style/scripts/ffcode.py"`
+`FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`
 
 1. Scope: default is the diff against the base (`--changed`, base from `[check] base`); `--staged` before a commit; no flag = the whole repo
    (expect legacy noise; report counts only, `lint --summary`).

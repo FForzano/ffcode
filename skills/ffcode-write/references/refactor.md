@@ -1,6 +1,6 @@
 # Refactoring (loaded by ffcode-write for restructuring tasks)
 
-`FF="python3 ~/.claude/skills/ffcode-style/scripts/ffcode.py"`; rules S1–S6, N1–N3 of `checklist.md`.
+`FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`; rules S1–S6, N1–N3 of `checklist.md`.
 
 1. **Scope and goal in one line** (which rule it serves: S2 duplicate, S6 size, S1 mixed responsibilities). Refactor ≠ feature: no behaviour change, no unrelated cleanup; found extras are listed at the end.
 2. **Find the target with data:** `$FF lint --rules DUP,FUNC,FILE,PARAM [--changed]`, `$FF find NAME`, `$FF refs NAME` (usages by file = the blast radius; for a public contract also `ffcode-workspace`).

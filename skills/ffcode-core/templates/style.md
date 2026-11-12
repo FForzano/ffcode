@@ -1,6 +1,6 @@
-# Project style (deviations and additions to ffcode-style)
+# Project style (deviations and additions to ffcode-core)
 
-Only what differs from the general rules in `ffcode-style`. Empty = general rules apply.
+Only what differs from the general rules in `ffcode-core`. Empty = general rules apply.
 
 ## Deviations
 <!-- rule id from checklist.md -> what applies here and why -->
