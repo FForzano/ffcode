@@ -13,4 +13,4 @@ description: Systematic debugging and triage - compress a log or stack trace to 
 4. **State the cause** in one or two sentences with `file:line` before touching code; check the hypothesis (a log line, an assertion), not just plausibility.
 5. **Fix the cause** with the smallest diff (E1/E3 often: a silently ignored input). Look with `refs` for the same pattern elsewhere and list, don't fix, other occurrences.
 6. **Pin it:** the reproducing test stays as a regression test named after the rule (C6, T1). `$FF check --changed`.
-7. Report: cause, fix, test added, what was verified, similar spots found. Durable lessons → `.ffcode/context.md` (one line) or an ADR (`ffcode-decide`).
+7. Report: cause, fix, test added, what was verified, similar spots found. Durable lessons → `.ffcode/context.md` (one line) or an ADR (`$FF adr`).

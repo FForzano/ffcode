@@ -1,9 +1,4 @@
----
-name: ffcode-refactor
-description: Behaviour-preserving restructuring in small verified steps - find duplicates and oversized units with ffcode lint, measure impact with refs, characterise current behaviour with tests, change one thing at a time, keep the suite green, one commit per step. Use when the user asks to refactor, rename, extract, split, deduplicate, simplify or clean up code ("rifattorizza", "pulisci", "elimina la duplicazione", "spezza questa funzione", "rinomina").
----
-
-# ffcode-refactor
+# Refactoring (loaded by ffcode-write for restructuring tasks)
 
 `FF="python3 ~/.claude/skills/ffcode-style/scripts/ffcode.py"`; rules S1–S6, N1–N3 of `checklist.md`.
 

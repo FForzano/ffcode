@@ -5,19 +5,14 @@ consistency), a per-project `.ffcode/` folder, and multi-repo support.
 
 | Skill | Purpose |
 |---|---|
-| `ffcode-style` | The shared core: `references/checklist.md` (rules with ids, `[auto]`/`[judge]`), `principles.md`, `lang/` (Python, PHP, TS/React, shell/AWS, MATLAB, HTML/CSS), `scripts/ffcode.py` (CLI: `init map find lint check commitmsg workspace`), `templates/`, `tests/run.sh`. Edit the style here only. |
-| `ffcode-init` | Adopt a repo: detect stack/commands, create `.ffcode/`, migrate CLAUDE.md into `.ffcode/context.md` (CLAUDE.md becomes `@` imports). |
-| `ffcode-map` | Compact repo map and symbol index (`map.md`, `find NAME`) instead of tree sweeps. |
-| `ffcode-write` | Implement/fix/refactor in the style: orient from `.ffcode/`, reuse, test, small steps, `check`. UI is detected from the files touched and loads `references/ui*.md`: a machine-readable design contract (`.ffcode/design.toml`) generates the tokens (`ui sync`), is enforced by `uilint` (`OFFCOLOR/SIZE/SPACE/RADIUS`, a11y/motion/i18n leads) and checked (`ui palette`); `ui context` is a ~40-line digest; `ui components`/`ui new` for reuse and scaffolding. |
+| `ffcode-style` | The shared core, also the repo map (`map`, `find`, `refs`) and decision records (`adr`): `references/checklist.md` (rules with ids, `[auto]`/`[judge]`), `principles.md`, `lang/` (Python, PHP, TS/React, shell/AWS, MATLAB, HTML/CSS), `scripts/ffcode.py` (CLI: `init map find lint check commitmsg workspace`), `templates/`, `tests/run.sh`. Edit the style here only. |
+| `ffcode-init` | Adopt a repo: detect stack/commands, create `.ffcode/`, migrate CLAUDE.md into `.ffcode/context.md` (CLAUDE.md becomes `@` imports), generate the first map. |
+| `ffcode-write` | Implement/fix/refactor in the style: orient from `.ffcode/`, reuse, test, small steps, `check`. Loads `references/refactor.md` for restructuring and `tests.md` (diff coverage, `failwithout`, optional mutation on critical areas) for tests. UI is detected from the files touched and loads `references/ui*.md`: a machine-readable design contract (`.ffcode/design.toml`) generates the tokens (`ui sync`), is enforced by `uilint` (`OFFCOLOR/SIZE/SPACE/RADIUS`, a11y/motion/i18n leads) and checked (`ui palette`); `ui context` is a ~40-line digest; `ui components`/`ui new` for reuse and scaffolding. |
 | `ffcode-check` | Mechanical pass/fail: configured format/lint/typecheck/test/build + ffcode lint, compressed output. No edits. |
 | `ffcode-review` | Review a diff as a demanding colleague, ranked findings with rule ids, after the scripts pre-filter. |
 | `ffcode-commit` | Logical commits, validated messages, PR description. |
-| `ffcode-workspace` | Multi-repo products: `.ffcode/workspace.toml`, clones under `.ffcode/repos` (git-ignored), dependency graph, contract-change tracking. |
+| `ffcode-workspace` | Multi-repo products and their releases (`release`: commits, migrations, contract changes per repo, deploy order): `.ffcode/workspace.toml`, clones under `.ffcode/repos` (git-ignored), dependency graph, contract-change tracking. |
 | `ffcode-debug` | Compress logs/traces to repo frames, reproduce with a failing test, `git bisect` on the test command, fix the cause, pin it. |
-| `ffcode-refactor` | Behaviour-preserving steps: lint finds duplicates/oversize, `refs` measures impact, characterisation tests first, one step per commit. |
-| `ffcode-test` | Missing tests for a diff: diff coverage from the real report (`diffcov`, fallback `untested`), tests that pin the rule, `failwithout` proves they fail without the change, optional `mutate` on the project's critical areas. |
-| `ffcode-release` | Multi-repo release view: commits, new migrations, contract changes per repo, deploy order, checklist. Never executes without confirmation. |
-| `ffcode-decide` | Short numbered decision records in `.ffcode/decisions`, recall before re-opening a topic. |
 
 ## Install
 

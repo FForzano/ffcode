@@ -1,6 +1,6 @@
 ---
 name: ffcode-style
-description: Federico's coding style and the shared toolbox of the ffcode skills - checklist of rules (structure, single source of truth, errors, comments, tests, git), per-language notes (Python, PHP, TypeScript/React, shell/Terraform/AWS, MATLAB, HTML/CSS), the per-project .ffcode/ folder (config, context, style deviations, map, state, decisions) and the ffcode CLI (init, map, find, lint, check, commitmsg, workspace). Use when the user asks what the coding rules are, how to structure code in this project, what rule applies, or to run ffcode lint/map/find. The other ffcode-* skills build on this one.
+description: Federico's coding style and the shared toolbox of the ffcode skills - checklist of rules (structure, single source of truth, errors, comments, tests, git), per-language notes (Python, PHP, TypeScript/React, shell/Terraform/AWS, MATLAB, HTML/CSS), the per-project .ffcode/ folder (config, context, style deviations, map, state, decisions) and the ffcode CLI (init, map, find, lint, check, commitmsg, workspace). Use when the user asks what the coding rules are, how to structure code in this project, what rule applies, or to run ffcode lint/map/find; also for navigating a repo cheaply ("mappa il repo", "dove si trova X", "aggiorna la mappa") and for recording or recalling decisions ("annotiamo questa decisione", "ADR", "perché avevamo scelto X", "scegliamo tra A e B"). The other ffcode-* skills build on this one.
 ---
 
 # ffcode-style
@@ -50,3 +50,11 @@ All take `--root DIR`; the root is the nearest ancestor with `.ffcode/`, else th
 Token rule: read `context.md`, `style.md`, `state.md`, then `map.md`; use `find` for the rest. Do not list or grep the whole tree first.
 
 To change a rule for all projects, edit `references/` here; for one project, `.ffcode/style.md`.
+
+## Navigating with the map (replaces a tree sweep)
+Read `.ffcode/map.md` (create it with `$FF map` if missing or stale after pulls/moves): directories (files, lines), entry points, commands, top-level symbols per file with line numbers (capped at 400 lines;
+Python, PHP, TS/JS, MATLAB, shell, Terraform). Then `$FF find NAME` (substring) → `file:line`, and read only that range. `$FF refs NAME` for all usages by file. Symbols may be stale: confirm before editing.
+
+## Decisions
+Durable choices go in `.ffcode/decisions/NNNN-title.md` (`$FF adr "Title"`; fill Context, Decision, Consequences, Alternatives in 5–10 lines; committed). Before re-opening a topic read the matching record; a settled decision is
+not re-litigated unless asked or a stated consequence failed. A standing rule is also one line in `style.md`/`context.md`; a superseding record says "Supersedes NNNN". Choosing between options: 2–3 real ones, a recommendation and why; ask only for business facts.

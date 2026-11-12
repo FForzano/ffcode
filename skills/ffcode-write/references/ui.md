@@ -11,7 +11,7 @@ Do not open PRODUCT.md, DESIGN.md, tokens files or the component folder for this
 ## 2. Contract (schema: `ui-contract.md`)
 - Missing, and the task is more than a tiny fix → `$FF ui init` (from `DESIGN.md` frontmatter, else from values really used; guesses marked `*`). Ask at most: mode
   (persuade / operate / read / experience), three mood words, brand constraints. Colours become **roles**. Then `$FF ui sync` and `$FF ui palette --fix`.
-- Prose files (`PRODUCT.md`, `DESIGN.md`) stay as they are; the contract wins on values. Change it only on purpose: edit → `ui sync` → `uilint` (drift) → record a standing rule with `ffcode-decide`.
+- Prose files (`PRODUCT.md`, `DESIGN.md`) stay as they are; the contract wins on values. Change it only on purpose: edit → `ui sync` → `uilint` (drift) → record a standing rule with `$FF adr`.
 
 ## 3. Build
 1. Reuse: `$FF ui components [NAME]`, `$FF find`. Extend with a prop before cloning (S2).

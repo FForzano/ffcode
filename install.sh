@@ -27,10 +27,12 @@ install_one() { local s="$1" t="$DEST/$1"
   if [ "$mode" = link ]; then ln -s "$REPO/skills/$s" "$t"; else cp -R "$REPO/skills/$s" "$t"; fi
   echo "  $s: $(state "$s")"; }
 
+prune() { for l in "$DEST"/ffcode-*; do [ -L "$l" ] && [ ! -e "$l" ] && rm "$l" && echo "  removed stale $(basename "$l")"; done; true; }
 case "$action" in
   update) git -C "$REPO" remote | grep -q . && git -C "$REPO" pull --ff-only || echo "no remote; reinstalling"
+          prune
           for s in "${skills[@]}"; do install_one "$s"; done ;;
-  install) for s in "${skills[@]}"; do install_one "$s"; done ;;
+  install) prune; for s in "${skills[@]}"; do install_one "$s"; done ;;
   uninstall) for s in "${skills[@]}"; do t="$DEST/$s"; if [ -L "$t" ] && [ "$(readlink "$t")" = "$REPO/skills/$s" ]; then rm "$t"; echo "  removed $s"; elif [ -d "$t" ]; then echo "  $s: copy left in place (remove by hand)"; fi; done ;;
   status) for s in "${skills[@]}"; do echo "  $s: $(state "$s")"; done ;;
 esac

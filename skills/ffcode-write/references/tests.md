@@ -1,9 +1,4 @@
----
-name: ffcode-test
-description: Find and write the missing tests for a change - lists symbols added in the diff that no test mentions, designs tests that pin the rule (not the implementation), writes them in the project's test framework and checks they fail without the change. Use when the user asks for tests, coverage of a diff, "scrivi i test", "cosa manca da testare", "pinna questa regola con un test", or before delivering a change without tests.
----
-
-# ffcode-test
+# Tests (loaded by ffcode-write when tests are requested or a change lacks them)
 
 `FF="python3 ~/.claude/skills/ffcode-style/scripts/ffcode.py"`; rules T1–T4, C6.
 
