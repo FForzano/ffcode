@@ -1,20 +1,23 @@
 # Multi-repo workspace. Clones live in .ffcode/repos/<name> (git-ignored). Run: ffcode workspace sync
 [[repo]]
-name = "formandopercorsi-backend"
+name = "acme-backend"
 self = true                 # the repo that holds this .ffcode/
 role = "backend"
-url = "git@github.com:FormandoPercorsi/formandopercorsi-backend.git"
-contracts = ["docs/openapi.json"]
+url = "git@github.com:acme/acme-backend.git"
+branch = "develop"
+contracts = ["config/routes.php"]   # files other repos rely on: routes, OpenAPI, schemas, env examples
 
 [[repo]]
-name = "formandopercorsi-frontend"
+name = "acme-frontend"
 role = "frontend"
-url = "git@github.com:FormandoPercorsi/formandopercorsi-frontend.git"
-local = "~/Documents/FPC-DEV/formandopercorsi-frontend"   # optional: --from-local clones from here
-depends_on = ["formandopercorsi-backend"]
+url = "git@github.com:acme/acme-frontend.git"
+branch = "develop"
+local = "~/dev/acme-frontend"   # optional: --from-local clones from here instead of the network
+depends_on = ["acme-backend"]
 
 [[repo]]
-name = "aws"
+name = "acme-infra"
 role = "infra"
-url = "git@github.com:FormandoPercorsi/aws.git"
-depends_on = ["formandopercorsi-backend", "formandopercorsi-frontend"]
+url = "git@github.com:acme/acme-infra.git"
+branch = "main"
+depends_on = ["acme-backend", "acme-frontend"]
