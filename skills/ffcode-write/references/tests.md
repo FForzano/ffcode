@@ -1,6 +1,6 @@
 # Tests (loaded by ffcode-write when tests are requested or a change lacks them)
 
-`ff` (installed in ~/.local/bin by `install.sh`; if `command -v ff` finds nothing, prefix the call with `ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; };`); rules T1–T4, C6.
+`ff` (CLI of ffcode-core); rules T1–T4, C6.
 
 1. **Find what is not exercised, best signal first:**
    - `ff diffcov --run` (or `ff check --changed --coverage`): added executable lines that no test ran, per function, from the real coverage report
