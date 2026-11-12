@@ -5,12 +5,13 @@
 #   ./install.sh --update     git pull (if a remote exists) and re-install
 #   ./install.sh --uninstall  remove the skills installed from this repo
 #   ./install.sh --status     show what is installed
+#   --hooks / --no-hooks      install the Claude Code hooks without asking / skip that step
 set -euo pipefail
 REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 DEST="${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}"
-mode=link; action=install
+mode=link; action=install; hooks=ask
 for a in "$@"; do case "$a" in
-  --copy) mode=copy ;; --update) action=update ;; --uninstall) action=uninstall ;; --status) action=status ;;
+  --hooks) hooks=yes ;; --no-hooks) hooks=no ;; --copy) mode=copy ;; --update) action=update ;; --uninstall) action=uninstall ;; --status) action=status ;;
   -h|--help) sed -n '2,8p' "$0"; exit 0 ;; *) echo "unknown option: $a" >&2; exit 2 ;; esac; done
 
 skills=(); for d in "$REPO"/skills/*/; do skills+=("$(basename "$d")"); done
@@ -42,9 +43,14 @@ case "$action" in
   status) for s in "${skills[@]}"; do echo "  $s: $(state "$s")"; done ;;
 esac
 if [ "$action" = install ] || [ "$action" = update ]; then echo "$REPO $mode" > "$DEST/.ffcode-repo"; link_cli; fi
-if [ "$action" = uninstall ]; then rm -f "$DEST/.ffcode-repo"; unlink_cli; fi
+if [ "$action" = uninstall ]; then "$BIN/ff" hooks install --remove >/dev/null 2>&1 || true; rm -f "$DEST/.ffcode-repo"; unlink_cli; fi
 if [ "$action" = status ]; then echo "  ff: $([ -x "$BIN/ff" ] && readlink "$BIN/ff" || echo "not installed")"; fi
 if [ "$action" != uninstall ]; then
   python3 -c 'import sys,tomllib; assert sys.version_info>=(3,11)' 2>/dev/null && echo "python3 OK (>=3.11)" || echo "WARNING: python3 >= 3.11 required"
+  if [ "$action" != uninstall ] && [ -x "$BIN/ff" ] && ! "$BIN/ff" hooks status >/dev/null 2>&1; then
+    echo "Claude Code hooks (update check, map refresh, lint at the end of each turn) are NOT installed. They are what makes those steps automatic."
+    if [ "$hooks" = ask ] && [ -t 0 ]; then read -r -p "Install them now into ~/.claude/settings.json? (backup kept; undo: ff hooks install --remove) [Y/n] " ans; case "${ans:-y}" in [nN]*) hooks=no ;; *) hooks=yes ;; esac; fi
+    if [ "$hooks" = yes ]; then "$BIN/ff" hooks install; else echo "  later: ff hooks install"; fi
+  fi
   echo "New Claude Code session needed to pick up the skills."
 fi
