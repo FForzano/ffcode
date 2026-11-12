@@ -6,6 +6,7 @@ description: Adopt a repository into ffcode - detect languages and commands, cre
 # ffcode-init
 
 `FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`
+Session start, once: `$FF update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
 
 1. `$FF init --dry-run`, show the detected languages and commands in two lines, then `$FF init`.
 2. Fix `config.toml` with the user only where detection is wrong or silent: commands that run in a container (`docker compose exec web ...`),

@@ -6,6 +6,7 @@ description: Implement a feature, fix a bug or refactor in Federico's coding sty
 # ffcode-write
 
 `FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`; rules: `ffcode-core/references/checklist.md` + `lang/<language>.md` of the files touched.
+Session start, once: `$FF update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
 
 ## Protocol
 1. **Orient cheaply.** No `.ffcode/` → offer `ffcode-init` (do not block on it). Else read `context.md`, `style.md`, `state.md`, `map.md`. Multi-repo

@@ -6,6 +6,7 @@ description: Manage and release a product made of several repositories (e.g. fro
 # ffcode-workspace
 
 `FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`; config `.ffcode/workspace.toml` (template: `ffcode-core/templates/workspace.toml`).
+Session start, once: `$FF update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
 
 ## Set up
 1. Create `.ffcode/workspace.toml`: one `[[repo]]` per repository with `name`, `url`, `role`, `depends_on`, `contracts` (paths inside that repo that other repos rely on:

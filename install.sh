@@ -36,6 +36,8 @@ case "$action" in
   uninstall) for s in "${skills[@]}"; do t="$DEST/$s"; if [ -L "$t" ] && [ "$(readlink "$t")" = "$REPO/skills/$s" ]; then rm "$t"; echo "  removed $s"; elif [ -d "$t" ]; then echo "  $s: copy left in place (remove by hand)"; fi; done ;;
   status) for s in "${skills[@]}"; do echo "  $s: $(state "$s")"; done ;;
 esac
+if [ "$action" = install ] || [ "$action" = update ]; then echo "$REPO $mode" > "$DEST/.ffcode-repo"; fi
+if [ "$action" = uninstall ]; then rm -f "$DEST/.ffcode-repo"; fi
 if [ "$action" != uninstall ]; then
   python3 -c 'import sys,tomllib; assert sys.version_info>=(3,11)' 2>/dev/null && echo "python3 OK (>=3.11)" || echo "WARNING: python3 >= 3.11 required"
   echo "New Claude Code session needed to pick up the skills."

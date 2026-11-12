@@ -6,6 +6,7 @@ description: Systematic debugging and triage - compress a log or stack trace to 
 # ffcode-debug
 
 `FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`
+Session start, once: `$FF update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
 
 1. **Compress the evidence, don't paste it.** `$FF debug log FILE` (or `cmd 2>&1 | $FF debug log -`): error lines, frames inside this repo, tail. Work from that.
 2. **Reproduce first.** Smallest failing test or command (`[commands] test` narrowed to one test). No reproduction → say what is missing; ask for the input/env, don't guess a fix.

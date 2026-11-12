@@ -6,6 +6,7 @@ description: Mechanical pass/fail check of code changes, no judgment and no edit
 # ffcode-check
 
 `FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`
+Session start, once: `$FF update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
 
 1. Scope: default is the diff against the base (`--changed`, base from `[check] base`); `--staged` before a commit; no flag = the whole repo
    (expect legacy noise; report counts only, `lint --summary`).

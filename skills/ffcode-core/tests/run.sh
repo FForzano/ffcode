@@ -111,4 +111,18 @@ $FF ui components | grep -q "Card" || fail components
 $FF ui new Badge --dry-run | grep -q "Badge.tsx" || fail new
 $FF ui context | grep -q "components: 1" || fail context
 $FF ui init --stdout | grep -q "\[type\]" || fail ui-init
+# update-check: asks (prints), throttles, applies only with --apply
+R="$(mktemp -d)"; git init -q --bare -b main "$R/remote.git"; git clone -q "$R/remote.git" "$R/work" 2>/dev/null
+( cd "$R/work" && git config user.email t@t && git config user.name t && git checkout -q -b main && printf '#!/bin/sh\necho installed > "$CLAUDE_SKILLS_DIR/marker"\n' > install.sh && git add -A && git commit -qm init && git push -q -u origin main )
+git clone -q "$R/remote.git" "$R/repo"
+( cd "$R/work" && echo x > f && git add -A && git commit -qm "new thing" && git push -q )
+mkdir "$R/dest"; export FFCODE_REPO="$R/repo" XDG_CACHE_HOME="$R/cache" CLAUDE_SKILLS_DIR="$R/dest"
+out=$($FF update-check --force); grep -q "UPDATE_AVAILABLE: 1" <<<"$out" || fail "update-check detect"
+grep -q "new thing" <<<"$out" || fail "update-check subjects"
+[ -z "$($FF update-check)" ] || fail "update-check throttle"
+[ ! -f "$R/repo/f" ] || fail "update-check must not pull by itself"
+$FF update-check --apply | grep -q UPDATED || fail "update-check apply"
+[ -f "$R/repo/f" ] && [ -f "$R/dest/marker" ] || fail "update-check apply result"
+[ -z "$($FF update-check --force)" ] || fail "update-check up to date is silent"
+unset FFCODE_REPO XDG_CACHE_HOME CLAUDE_SKILLS_DIR
 echo "all ok"

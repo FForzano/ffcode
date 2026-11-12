@@ -20,6 +20,11 @@ consistency), a per-project `.ffcode/` folder, and multi-repo support.
 ./install.sh            # symlink into ~/.claude/skills   (--copy, --update, --status, --uninstall)
 skills/ffcode-core/tests/run.sh   # smoke tests
 ```
+### Updates
+At the start of a session the skills run `ffcode update-check` (silent, at most once a week, offline-safe). If the repository has new commits, Claude lists them and **asks** whether to update;
+only on a yes it runs `update-check --apply` (`git pull --ff-only`, then `install.sh` again in the mode used before; it refuses with local changes). Nothing updates by itself.
+`FFCODE_NO_UPDATE_CHECK=1` disables the check. `install.sh` leaves `<skills dir>/.ffcode-repo` so the repository is found after `--copy` installs too.
+
 Needs `python3` ≥ 3.11 (stdlib only), `git`. Open a new Claude Code session afterwards.
 
 ## In a project

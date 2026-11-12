@@ -9,6 +9,10 @@ Rules in `references/checklist.md` (read first; ids S1, D2, E3, ... are cited in
 principles in `references/principles.md`, language notes in `references/lang/<language>.md` (read only those of the project:
 `[project] languages` in `.ffcode/config.toml`). Rules are language-agnostic; the language file only maps them to the idiom.
 
+## Updates
+At the start of a session run `$FF update-check` once (silent, at most once a week, offline-safe). If it prints `UPDATE_AVAILABLE`, ask the user whether to update (list the commit subjects);
+only on a yes run `$FF update-check --apply` (`git pull --ff-only`, then re-installs; refuses with local changes). On a no, do nothing: it asks again next week. `FFCODE_NO_UPDATE_CHECK=1` disables the check.
+
 ## The CLI (stdlib Python ≥ 3.11, no install)
 
 ```bash

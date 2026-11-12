@@ -6,6 +6,7 @@ description: Review a diff, branch, PR or set of files as a demanding colleague 
 # ffcode-review
 
 `FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`
+Session start, once: `$FF update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
 
 1. Scope: the diff vs base (`git diff <base>...HEAD`), a PR (`gh pr diff N`), or the files named. Start with `git diff --stat`; read hunks, not whole files, unless a hunk cannot be judged without its function.
 2. Run `$FF check --changed` first. Its findings are not repeated in prose; cite them by rule id and count. Read `.ffcode/context.md` and `style.md` (deviations are not findings).
