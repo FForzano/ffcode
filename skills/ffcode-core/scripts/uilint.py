@@ -9,6 +9,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+import policy
 from common import find_root, is_text, load_config, load_contract, tracked_files
 
 RULES = {
@@ -149,6 +150,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root"); ap.add_argument("--changed", action="store_true"); ap.add_argument("--staged", action="store_true")
     ap.add_argument("--base"); ap.add_argument("--rules"); ap.add_argument("--list", action="store_true"); ap.add_argument("--summary", action="store_true")
+    ap.add_argument("--baseline", action="store_true", help="add the current findings to .ffcode/baseline.json"); ap.add_argument("--no-baseline", action="store_true")
     a = ap.parse_args()
     if a.list:
         for k, v in RULES.items(): print(f"{k:13}{v}")
@@ -173,6 +175,9 @@ def main():
         if contract and not tokenfile_of(f, t): check_contract(f, t, contract, out)
         findings += [(f, n, r, m) for n, r, m in out if r in active]
     if motion_used and not reduced and "MOTION" in active and not (a.changed or a.staged): findings.append((Path("(project)"), 0, "MOTION", "no prefers-reduced-motion / useReducedMotion found"))
+    if a.baseline:
+        print(f"baseline: {policy.write_baseline(root, findings, merge=True)} finding(s) now in .ffcode/baseline.json"); return 0
+    findings, h_rules, h_base = policy.apply(root, findings, not a.no_baseline)
     by = defaultdict(list)
     for f, n, r, m in findings: by[r].append((f, n, m))
     for r in RULES:
@@ -184,7 +189,7 @@ def main():
     strict = bool((contract or {}).get("ui", {}).get("strict"))
     hard = [x for x in findings if strict or not x[2].startswith("OFF")]
     adv = len(findings) - len(hard)
-    print(f"uilint: {len(findings)} finding(s) in {len(scope)} file(s)" + (f" ({adv} OFF* advisory: [ui] strict = false)" if adv else ""))
+    print(f"uilint: {len(findings)} finding(s) in {len(scope)} file(s)" + (f" ({h_base} baselined, {h_rules} waived hidden)" if h_base or h_rules else "") + (f" ({adv} OFF* advisory: [ui] strict = false)" if adv else ""))
     return 1 if hard else 0
 
 

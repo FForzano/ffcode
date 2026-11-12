@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Smoke tests of the ffcode CLI on a throwaway repo. Usage: tests/run.sh
 set -euo pipefail
-FF="python3 $(cd "$(dirname "$0")/../scripts" && pwd)/ffcode.py"
+HERE="$(cd "$(dirname "$0")" && pwd)"
+FF="python3 $HERE/../scripts/ffcode.py"
 T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT; cd "$T"
 git init -q -b main; git config user.email t@t; git config user.name t
 mkdir pkg tests
@@ -111,6 +112,76 @@ $FF ui components | grep -q "Card" || fail components
 $FF ui new Badge --dry-run | grep -q "Badge.tsx" || fail new
 $FF ui context | grep -q "components: 1" || fail context
 $FF ui init --stdout | grep -q "\[type\]" || fail ui-init
+# rules / orient / budget / hooks
+$FF rules | grep -q "^- S1 \[judge\]" || fail rules-judge
+! $FF rules | grep -q "^- E2 \[auto\]" || fail rules-no-auto
+$FF rules E2 | grep -q "^- E2 \[auto\]" || fail rules-id
+$FF orient | grep -q "## context.md" || fail orient
+$FF budget --check >/dev/null || fail budget
+H="$(mktemp -d)"; HOME="$H" $FF hooks install | grep -q installed || fail hooks-install
+HOME="$H" $FF hooks install >/dev/null; [ "$(grep -c 'hook stop' "$H/.claude/settings.json")" = 1 ] || fail hooks-idempotent
+HOME="$H" $FF hooks install --remove >/dev/null; ! grep -q "hook stop" "$H/.claude/settings.json" || fail hooks-remove
+printf 'print(1)\n' > pkg/dbg.py; git add pkg/dbg.py
+out=$(echo '{"session_id":"t"}' | XDG_CACHE_HOME="$H/c" $FF hook stop); grep -q '"decision": "block"' <<<"$out" || fail hook-stop-block
+[ -z "$(echo '{"session_id":"t"}' | XDG_CACHE_HOME="$H/c" $FF hook stop)" ] || fail hook-stop-once
+$FF hooks git >/dev/null; grep -q "ffcode map" .git/hooks/post-merge || fail hooks-git
+$FF hooks git --remove >/dev/null; [ ! -f .git/hooks/post-merge ] || fail hooks-git-remove
+git rm -qf --cached pkg/dbg.py; rm pkg/dbg.py
+python3 "$HERE/consistency.py" >/dev/null || fail "checklist/lint consistency"
+# json outputs, config, commit-plan, pr/report
+{ $FF lint --json || true; } | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['count']>0 and 'rules' in d" || fail lint-json
+{ $FF check --no-lint --json || true; } | python3 -c "import json,sys; assert json.load(sys.stdin)['result'] in ('OK','FAIL')" || fail check-json
+$FF config --validate | grep -q "0 error" || fail config-validate
+cp .ffcode/config.toml "$H/cfg.bak"; printf '[commit]\nstyle = "bad"\n' > .ffcode/config.toml
+$FF config --validate >/dev/null && fail config-validate-bad; cp "$H/cfg.bak" .ffcode/config.toml
+printf 'x\n' > .env; $FF commit-plan | grep -q "possible secret" || fail commit-plan; rm .env
+$FF pr | grep -q "## Why" || fail pr
+$FF report review | grep -q "Mechanical" || fail report-review
+# rules.toml, baseline, adr index, tests-for, hotspots, workspace lock/map, glossary
+[ -f .ffcode/rules.toml ] && [ -f .ffcode/glossary.md ] || fail init-new-files
+{ $FF lint --json || true; } | python3 -c "import json,sys; assert json.load(sys.stdin)['count']>0" || fail pre-baseline
+$FF lint --baseline >/dev/null; $FF lint | grep -q "^lint: 0 finding" || fail baseline-hides
+printf 'print(9)\n' >> pkg/a.py; { $FF lint || true; } | grep -q "^lint: 1 finding" || fail baseline-new-only
+{ $FF lint --no-baseline || true; } | grep -q "finding" || fail no-baseline
+git checkout -q pkg/a.py; rm .ffcode/baseline.json
+printf '[rule.DEBUG]\nignore = ["pkg/*"]\nreason = "t"\n' > .ffcode/rules.toml
+{ $FF lint || true; } | grep -q "^DEBUG" && fail rules-toml-ignore; $FF rules DEBUG | grep -q "Deviations" || fail rules-deviations
+printf '[rule.NOPE]\noff = true\n' > .ffcode/rules.toml; $FF config --validate >/dev/null && fail rules-toml-validate; rm .ffcode/rules.toml
+$FF adr "First" --rules S6 >/dev/null; $FF adr "Second" --supersedes 1 >/dev/null
+$FF adr --list --all | grep -q "superseded by" || fail adr-supersede
+$FF adr --list --rule s6 --all | grep -q First || fail adr-list-rule; grep -q "0002" .ffcode/decisions/index.md || fail adr-index
+$FF map >/dev/null; $FF tests-for pkg/b.py | grep -q "tests/test_b.py" || fail tests-for
+$FF tests-for pkg/a.py | grep -q "no test found" || fail tests-for-missing
+$FF hotspots >/dev/null || fail hotspots
+printf '[[repo]]\nname="me"\nself=true\nrole="backend"\ncontracts=["pyproject.toml"]\n' > .ffcode/workspace.toml
+$FF workspace contracts --accept >/dev/null; [ -f .ffcode/contracts.lock ] || fail lock
+echo "# x" >> pyproject.toml; $FF workspace contracts --changed | grep -q CHANGED || fail contracts-changed
+$FF workspace map >/dev/null; grep -q "contract" .ffcode/workspace-map.md || fail workspace-map
+git checkout -q pyproject.toml; rm .ffcode/workspace.toml .ffcode/contracts.lock
+printf '| Widget | a thing | pkg/b.py |\n' >> .ffcode/glossary.md; $FF find widget | grep -q "glossary:" || fail glossary
+# architecture
+mkdir -p app/controllers app/services; printf 'x=1\n' > app/services/OrderService.py; printf 'x=1\n' > app/services/OtherService.py
+printf 'from app.services.order_service import S\nfrom app.repos.x import R\n' > app/controllers/OrderController.py; printf 'x=1\n' > app/services/helpers.py
+git add -A; $FF arch infer | grep -q 'name = "service"' || fail arch-infer
+printf '[architecture]\nstyle = "t"\n[[layer]]\nname = "controller"\npaths = ["app/controllers/**"]\nmay_import = ["service"]\n[[layer]]\nname = "repository"\npaths = ["app/repos/**"]\n[[layer]]\nname = "service"\npaths = ["app/services/**"]\nname_pattern = ".*Service"\nstem = "{Name}Service"\n' > .ffcode/architecture.toml
+out=$({ $FF lint || true; }); grep -q "app/services/helpers.py:1: helpers" <<<"$out" || fail arch-name; grep -q "ARCHDEP" <<<"$out" || fail arch-dep
+$FF arch new Foo | grep -q "app/services/FooService.py  missing" || fail arch-new; $FF arch | grep -q "controller" || fail arch-summary
+$FF config --validate | grep -q "0 error" || fail arch-validate; $FF orient --no-map | grep -q "## architecture.toml" || fail arch-orient
+rm -rf app .ffcode/architecture.toml; git add -A
+# upgrade of an older project
+U="$(mktemp -d)"; git -C "$U" init -q -b main; ( cd "$U" && printf 'x=1\n' > a.py && $FF init >/dev/null && rm .ffcode/rules.toml .ffcode/version && printf 'map.md\n' > .ffcode/.gitignore )
+$FF upgrade --root "$U" --dry-run | grep -q "create rules.toml" && [ ! -f "$U/.ffcode/rules.toml" ] || fail upgrade-dry
+$FF upgrade --root "$U" >/dev/null; [ -f "$U/.ffcode/rules.toml" ] && grep -q workspace-map "$U/.ffcode/.gitignore" && [ "$(cat "$U/.ffcode/version")" = 2 ] || fail upgrade
+[ "$($FF upgrade --root "$U" | grep -c create)" = 0 ] || fail upgrade-idempotent
+HOME="$H" $FF hooks status >/dev/null && fail hooks-status-before; HOME="$H" $FF hooks install >/dev/null; HOME="$H" $FF hooks status | grep -q "installed (user)" || fail hooks-status
+out=$(HOME="$H" XDG_CACHE_HOME="$H/c2" $FF orient --no-map); grep -q "hooks are not installed" <<<"$out" && fail hint-when-installed
+HOME="$H" $FF hooks install --remove >/dev/null; out=$(HOME="$H" XDG_CACHE_HOME="$H/c2" $FF orient --no-map); grep -q "hooks are not installed" <<<"$out" || fail hint
+out=$(HOME="$H" XDG_CACHE_HOME="$H/c2" $FF orient --no-map); ! grep -q "hooks are not installed" <<<"$out" || fail hint-once
+A="$(mktemp -d)"; git -C "$A" init -q -b main; ( cd "$A" && printf 'x=1\n' > a.py && $FF init >/dev/null && rm .ffcode/rules.toml .ffcode/version )
+err=$($FF lint --root "$A" 2>&1 >/dev/null || true); grep -q "upgraded from schema 1 to 2 automatically" <<<"$err" || fail auto-upgrade
+[ -f "$A/.ffcode/rules.toml" ] && [ "$(cat "$A/.ffcode/version")" = 2 ] || fail auto-upgrade-result
+[ -z "$($FF lint --root "$A" 2>&1 >/dev/null || true)" ] || fail auto-upgrade-once
+rm "$A/.ffcode/version" "$A/.ffcode/rules.toml"; FFCODE_NO_AUTO_UPGRADE=1 $FF lint --root "$A" >/dev/null 2>&1 || true; [ ! -f "$A/.ffcode/rules.toml" ] || fail auto-upgrade-optout
 # update-check: asks (prints), throttles, applies only with --apply
 R="$(mktemp -d)"; git init -q --bare -b main "$R/remote.git"; git clone -q "$R/remote.git" "$R/work" 2>/dev/null
 ( cd "$R/work" && git config user.email t@t && git config user.name t && git checkout -q -b main && printf '#!/bin/sh\necho installed > "$CLAUDE_SKILLS_DIR/marker"\n' > install.sh && git add -A && git commit -qm init && git push -q -u origin main )

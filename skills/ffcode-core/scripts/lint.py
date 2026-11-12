@@ -13,6 +13,8 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
+import arch
+import policy
 from common import find_root, is_text, lang_of, load_config, tracked_files
 
 RULES = {
@@ -21,6 +23,7 @@ RULES = {
     "DEBUG": "debug leftover (print/console.log/var_dump/dd/debugger)", "CODE": "commented-out code",
     "TODO": "TODO/FIXME without owner or issue: use TODO(name) or TODO(#12)", "CATCH": "empty catch/except swallowing errors",
     "SECRET": "secret-like literal", "CONFLICT": "merge conflict marker", "DUP": "block duplicated elsewhere",
+    "ARCHNAME": "file name does not match its layer in architecture.toml", "ARCHDEP": "import of a layer the architecture does not allow",
 }
 DEBUG = {
     "python": r"^\s*(print\(|breakpoint\(|pdb\.set_trace|import pdb)", "php": r"\b(var_dump|print_r|dd|dump)\(|\bxdebug_break",
@@ -91,6 +94,7 @@ def check_file(root, f, lim, active):
         if re.match(r"^(<<<<<<<|>>>>>>>) ", l) or l == "=======": res.append((i, "CONFLICT", l[:20]))
     if lang == "python": res += py_findings(f, text, lim)
     elif lang in ("php", "typescript", "javascript"): res += brace_funcs(lines, lang, lim)
+    res += arch.check(root, f, lang) if arch.load(root) else []
     return [(f, i, r, m) for i, r, m in res if r in active]
 
 
@@ -119,6 +123,9 @@ def main():
     ap.add_argument("--root"); ap.add_argument("--changed", action="store_true"); ap.add_argument("--staged", action="store_true")
     ap.add_argument("--base"); ap.add_argument("--rules"); ap.add_argument("--list", action="store_true")
     ap.add_argument("--summary", action="store_true", help="counts per rule only")
+    ap.add_argument("--baseline", action="store_true", help="record the current findings as known legacy (.ffcode/baseline.json)")
+    ap.add_argument("--no-baseline", action="store_true", help="show findings hidden by baseline.json")
+    ap.add_argument("--json", action="store_true", help="machine-readable: {count, files, rules: {ID: [{file, line, msg}]}}")
     ap.add_argument("--dup-all", action="store_true", help="look for duplicates against the whole repo, not only changed files")
     a = ap.parse_args()
     if a.list:
@@ -134,15 +141,23 @@ def main():
         d = dupes(root, pool, lim["dup_window"])
         mine = {str(f) for f in scope}
         findings += [x for x in d if str(x[0]) in mine or not (a.changed or a.staged)]
+    if a.baseline:
+        print(f"baseline: {policy.write_baseline(root, findings)} finding(s) recorded in .ffcode/baseline.json"); return 0
+    findings, h_rules, h_base = policy.apply(root, findings, not a.no_baseline)
     by = defaultdict(list)
     for f, i, r, m in findings: by[r].append((f, i, m))
+    if a.json:
+        import json
+        print(json.dumps({"count": len(findings), "files": len(scope), "hidden": {"baseline": h_base, "rules_toml": h_rules}, "rules": {r: [{"file": str(f), "line": i, "msg": m} for f, i, m in v] for r, v in by.items()}}))
+        return 1 if findings else 0
     for r in RULES:
         if r in by:
             print(f"{r} ({len(by[r])}) {RULES[r]}")
             if a.summary: continue
             for f, i, m in by[r][:8]: print(f"  {f}:{i}: {m}")
             if len(by[r]) > 8: print(f"  ... +{len(by[r]) - 8}")
-    print(f"lint: {len(findings)} finding(s) in {len(scope)} file(s)")
+    hidden = f" ({h_base} baselined, {h_rules} waived by rules.toml hidden)" if h_base or h_rules else ""
+    print(f"lint: {len(findings)} finding(s) in {len(scope)} file(s){hidden}")
     return 1 if findings else 0
 
 

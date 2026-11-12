@@ -1,0 +1,8 @@
+# Deviations from the ffcode rules that the SCRIPTS apply (lint, uilint, check) and `ff rules` shows to Claude. Discursive conventions go in style.md.
+# [rule.FUNC]                       # a lint/uilint id (FUNC TODO OFFCOLOR ...) or a checklist id (S4 D1 ...)
+# ignore = ["migrations/**"]        # lint ids: findings in these paths are dropped
+# off = true                        # lint ids: rule off for the whole project
+# reason = "why"                    # always give the reason
+# adr = "0003"                      # optional: the decision record behind it (ff adr "Title" --rules FUNC)
+# note = "how the rule is applied here"   # checklist ids: read by write and review
+# Known legacy findings are not listed here: `ff lint --baseline` records them in baseline.json.

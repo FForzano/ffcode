@@ -7,7 +7,7 @@ import json
 import re
 from pathlib import Path
 
-from common import DIRNAME, DEFAULT_LIMITS, find_root, git
+from common import DIRNAME, DEFAULT_LIMITS, SCHEMA, find_root, git
 
 TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
 
@@ -22,7 +22,7 @@ def detect(root: Path) -> tuple[list[str], dict[str, str]]:
         if "[tool.black" in pp: cmds["format_check"] = "black --check ."
         elif "[tool.ruff" in pp: cmds["format_check"] = "ruff format --check ."
         if "[tool.mypy" in pp: cmds["typecheck"] = "mypy ."
-        if "pytest" in pp or (root / "tests").is_dir(): cmds["test"] = "pytest -q"
+        if "pytest" in pp or (root / "tests").is_dir(): cmds["test"] = "pytest -q"; cmds["test_one"] = "pytest -q {files}"
     if (root / "composer.json").is_file():
         langs.append("php")
         scripts = json.loads((root / "composer.json").read_text() or "{}").get("scripts", {})
@@ -52,7 +52,7 @@ def render_config(name: str, langs: list[str], cmds: dict[str, str], ui: bool = 
     q = lambda s: '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
     out = [f"[project]\nname = {q(name)}\nlanguages = [{', '.join(q(l) for l in langs)}]\n",
            "[commands]  # run from the project root; empty or missing = skipped. Wrap in docker/ssh here if needed.\n"]
-    for k in ("format_check", "lint", "typecheck", "test", "build"):
+    for k in ("format_check", "lint", "typecheck", "test", "test_one", "build"):
         out.append(f"{k} = {q(cmds[k])}" if k in cmds else f"# {k} = \"\"")
     out.append("\n[limits]  # used by ffcode lint; project overrides of the defaults")
     out += [f"{k} = {v}" for k, v in DEFAULT_LIMITS.items()]
@@ -78,7 +78,11 @@ def main():
         "style.md": (TEMPLATES / "style.md").read_text(),
         "context.md": (TEMPLATES / "context.md").read_text().replace("{{name}}", root.name),
         "state.md": (TEMPLATES / "state.md").read_text(),
-        ".gitignore": "# generated or personal, not shared\nmap.md\ncache/\nrepos/\nstate.md\n",
+        "version": f"{SCHEMA}\n",
+        "rules.toml": (TEMPLATES / "rules.toml").read_text(),
+        "architecture.toml": (TEMPLATES / "architecture.toml").read_text(),
+        "glossary.md": (TEMPLATES / "glossary.md").read_text(),
+        ".gitignore": "# generated or personal, not shared\nmap.md\nworkspace-map.md\ncache/\nrepos/\nstate.md\n",
     }
     print(f"root: {root}\nlanguages: {langs or '-'}\ncommands: {cmds or '-'}")
     for n, body in files.items():

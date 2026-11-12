@@ -8,6 +8,7 @@ import tomllib
 from pathlib import Path
 
 DIRNAME = ".ffcode"
+SCHEMA = 2   # layout of .ffcode/ written by this version; `ff upgrade` brings older projects up to it
 
 DEFAULT_LIMITS = {
     "max_function_lines": 50,
