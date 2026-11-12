@@ -93,7 +93,10 @@ def main():
             d.mkdir(exist_ok=True); p.write_text(body)
     if not a.dry_run:
         (d / "decisions").mkdir(exist_ok=True)
-    legacy = [n for n in ("CLAUDE.md", "AGENTS.md") if (root / n).is_file()]
+    def _migrated(f):  # already only imports: "@.ffcode/..." lines
+        lines = [x.strip() for x in f.read_text().splitlines() if x.strip()]
+        return bool(lines) and all(x.startswith("@.ffcode/") for x in lines)
+    legacy = [n for n in ("CLAUDE.md", "AGENTS.md") if (root / n).is_file() and not _migrated(root / n)]
     if legacy:
         print(f"legacy context found: {legacy} -> migrate into .ffcode/context.md (see ffcode-init skill)")
 

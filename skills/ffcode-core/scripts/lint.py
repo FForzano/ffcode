@@ -15,7 +15,7 @@ from pathlib import Path
 
 import arch
 import policy
-from common import find_root, is_text, lang_of, load_config, tracked_files
+from common import changed_lines, find_root, is_text, lang_of, load_config, tracked_files
 
 RULES = {
     "LEN": "line longer than limits.max_line_length", "FUNC": "function longer than limits.max_function_lines",
@@ -141,6 +141,14 @@ def main():
         d = dupes(root, pool, lim["dup_window"])
         mine = {str(f) for f in scope}
         findings += [x for x in d if str(x[0]) in mine or not (a.changed or a.staged)]
+    if (a.changed or a.staged) and not a.baseline:
+        # only what this diff touched: a legacy line in a file you edited is not yours
+        cl = changed_lines(root, a.staged, a.base or cfg["check"].get("base"))
+        def mine_line(f, i, r):
+            rng = cl.get(str(f), set())
+            if rng is None: return True
+            return r != "FILE" and (i in rng)
+        findings = [x for x in findings if mine_line(x[0], x[1], x[2])]
     if a.baseline:
         print(f"baseline: {policy.write_baseline(root, findings)} finding(s) recorded in .ffcode/baseline.json"); return 0
     findings, h_rules, h_base = policy.apply(root, findings, not a.no_baseline)

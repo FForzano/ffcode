@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
 import tomllib
@@ -106,3 +107,25 @@ def lang_of(path) -> str | None:
 def die(msg, code=2):
     print(msg, file=sys.stderr)
     sys.exit(code)
+
+
+def changed_lines(root: Path, only_staged=False, base=None):
+    """{path: set(line numbers) | None}: lines added or modified vs HEAD/base (or the index);
+    None means the whole file is new (untracked), so every line counts."""
+    args = ["diff", "-U0", "--no-color", "--diff-filter=ACMR"] + (["--cached"] if only_staged else [base or "HEAD"])
+    _, out = git(args, root)
+    res, cur = {}, None
+    for ln in out.split("\n"):
+        if ln.startswith("+++ "):
+            cur = ln[6:] if ln.startswith("+++ b/") else None
+            if cur is not None: res.setdefault(cur, set())
+        elif ln.startswith("@@") and cur is not None:
+            m = re.match(r"@@ -\S+ \+(\d+)(?:,(\d+))? @@", ln)
+            if m:
+                start, n = int(m.group(1)), int(m.group(2) if m.group(2) is not None else 1)
+                res[cur].update(range(start, start + n))
+    if not only_staged:
+        _, new = git(["ls-files", "--others", "--exclude-standard"], root)
+        for x in new.split("\n"):
+            if x: res[x] = None
+    return res
