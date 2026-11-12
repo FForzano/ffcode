@@ -48,7 +48,7 @@ def detect(root: Path) -> tuple[list[str], dict[str, str]]:
     return langs, cmds
 
 
-def render_config(name: str, langs: list[str], cmds: dict[str, str]) -> str:
+def render_config(name: str, langs: list[str], cmds: dict[str, str], ui: bool = False) -> str:
     q = lambda s: '"' + s.replace("\\", "\\\\").replace('"', '\\"') + '"'
     out = [f"[project]\nname = {q(name)}\nlanguages = [{', '.join(q(l) for l in langs)}]\n",
            "[commands]  # run from the project root; empty or missing = skipped. Wrap in docker/ssh here if needed.\n"]
@@ -60,6 +60,7 @@ def render_config(name: str, langs: list[str], cmds: dict[str, str]) -> str:
     out.append('# coverage = ""   # e.g. "pytest --cov=. --cov-report=xml"; then set [coverage] report\n[coverage]\n# report = "coverage.xml"  # Cobertura, Clover or lcov\n# min = 80  # minimum diff coverage in percent\n')
     out.append('# [mutation]  # optional, slow: areas where a surviving mutant costs money or data\n# critical = ["services/payments/**"]\n# command = "mutmut run --paths-to-mutate {files}"\n')
     out.append('[check]\nsecrets = true\nbase = "main"  # branch used for --changed\n')
+    if ui: out.append('ui = true  # run ffcode uilint in check (a11y, tokens, motion, i18n)\n\n[frontend]  # design context; empty = PRODUCT.md/DESIGN.md at the root if present, else .ffcode/product.md, design.md\n# product = ""\n# design = ""\n')
     return "\n".join(out)
 
 
@@ -69,9 +70,11 @@ def main():
     a = ap.parse_args()
     root = find_root(a.root)
     langs, cmds = detect(root)
+    pkg = (root / 'package.json').read_text() if (root / 'package.json').is_file() else ''
+    ui = bool(re.search(r'"(react|vue|svelte|@angular/core|next|nuxt|solid-js|preact)"', pkg)) or 'html' in langs or 'css' in langs
     d = root / DIRNAME
     files = {
-        "config.toml": render_config(root.name, langs, cmds),
+        "config.toml": render_config(root.name, langs, cmds, ui),
         "style.md": (TEMPLATES / "style.md").read_text(),
         "context.md": (TEMPLATES / "context.md").read_text().replace("{{name}}", root.name),
         "state.md": (TEMPLATES / "state.md").read_text(),

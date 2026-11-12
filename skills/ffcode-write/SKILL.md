@@ -14,7 +14,8 @@ description: Implement a feature, fix a bug or refactor in Federico's coding sty
 3. **Plan in ≤ 6 lines** when the change touches more than one file or a public contract: files, the test that will prove it, the risk. Ask the user only
    on a business rule or an irreversible action. Trivial change: skip the plan.
 4. **Test first for bugs** (reproduce with a failing test), **test with the code for features** (T1). Run the narrowest test after each step.
-5. **Implement in the project's idiom** (neighbouring files win over general taste). Smallest diff; unrelated problems are listed at the end, not fixed.
+5. **UI files involved** (components, styles, pages) → follow `ffcode-frontend` (design context, tokens, states, verification) for those parts.
+5b. **Implement in the project's idiom** (neighbouring files win over general taste). Smallest diff; unrelated problems are listed at the end, not fixed.
 6. **Close:** `$FF check --changed`; fix what it reports; walk the `[judge]` rules once against your own diff (S1, S2, E1, C1, C6, G4 are the usual misses).
    Docs/OpenAPI/README updated in the same change (G4).
 7. Update `.ffcode/state.md` or add a `decisions/NNNN-title.md` (5–10 lines: context, decision, consequences) only for durable facts.

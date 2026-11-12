@@ -13,6 +13,7 @@ consistency), a per-project `.ffcode/` folder, and multi-repo support.
 | `ffcode-review` | Review a diff as a demanding colleague, ranked findings with rule ids, after the scripts pre-filter. |
 | `ffcode-commit` | Logical commits, validated messages, PR description. |
 | `ffcode-workspace` | Multi-repo products: `.ffcode/workspace.toml`, clones under `.ffcode/repos` (git-ignored), dependency graph, contract-change tracking. |
+| `ffcode-frontend` | UI/design work in any web stack, commands inspired by Impeccable (Apache-2.0): shape, critique, audit, polish, harden, adapt, clarify, distill, extract, document, motion/colour/type/layout; per-project product + design context (reuses an existing PRODUCT.md/DESIGN.md); `uilint` and `uitokens` do the mechanical part. |
 | `ffcode-debug` | Compress logs/traces to repo frames, reproduce with a failing test, `git bisect` on the test command, fix the cause, pin it. |
 | `ffcode-refactor` | Behaviour-preserving steps: lint finds duplicates/oversize, `refs` measures impact, characterisation tests first, one step per commit. |
 | `ffcode-test` | Missing tests for a diff: diff coverage from the real report (`diffcov`, fallback `untested`), tests that pin the rule, `failwithout` proves they fail without the change, optional `mutate` on the project's critical areas. |

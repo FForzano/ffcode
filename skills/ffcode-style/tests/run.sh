@@ -61,4 +61,14 @@ $FF failwithout | grep -q "FAIL without" || fail failwithout
 [ -f pkg/b.py ] || fail restore
 printf '[mutation]\ncritical = ["pkg/*.py"]\ncommand = "echo mutating {files}"\n[check]\nbase = "main"\n' > .ffcode/config.toml
 $FF mutate | grep -q "mutating pkg/b.py" || fail mutate
+# uilint / uitokens
+mkdir -p ui; cat > ui/a.html <<'HTML'
+<html><body><img src="x.png"><input type="text"><div onClick="go()">x</div></body></html>
+HTML
+cat > ui/a.css <<'CSS'
+.a { color: #777777; background-color: #ffffff; outline: none; font-size: 10px; transition: all .2s; z-index: 999; }
+CSS
+git add -A; out=$($FF uilint || true)
+for id in IMGALT FIELDLABEL CLICKDIV HTMLLANG CONTRAST OUTLINE TINYFONT TRANSALL ZINDEX HARDCOLOR; do grep -q "^$id " <<<"$out" || fail "uilint missing $id"; done
+$FF uitokens | grep -q "#777777" || fail uitokens
 echo "all ok"

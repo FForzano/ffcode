@@ -47,6 +47,10 @@ def main():
         args = [sys.executable, str(here / "lint.py"), "--root", str(root), "--summary"]
         args += ["--changed"] if a.changed else (["--staged"] if a.staged else [])
         t = time.time(); rc, out = run(args); results.append(("ffcode-lint", "lint.py", rc, time.time() - t, out))
+    if cfg["check"].get("ui") and not a.no_lint and (not only or "uilint" in only):
+        here = Path(__file__).parent
+        args = [sys.executable, str(here / "uilint.py"), "--root", str(root), "--summary"] + (["--changed"] if a.changed else (["--staged"] if a.staged else []))
+        t = time.time(); rc, out = run(args); results.append(("uilint", "uilint.py", rc, time.time() - t, out))
     if a.coverage:
         here = Path(__file__).parent
         t = time.time(); rc, out = run([sys.executable, str(here / "diffcov.py"), "--root", str(root), "--run"])
