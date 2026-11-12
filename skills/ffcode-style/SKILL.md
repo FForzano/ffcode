@@ -26,7 +26,7 @@ $FF mutate [--list]             # optional mutation testing, only on changed fil
 $FF untested [--base REF]   # fallback: symbols added in the diff that no test mentions (heuristic)
 $FF debug log FILE|-        # compress a log/trace; `debug bisect GOOD` runs git bisect on the test command
 $FF adr "Title"             # new decision record in .ffcode/decisions
-$FF ui context|init|sync|palette|components|new   # design contract tooling (ffcode-frontend)
+$FF ui context|init|sync|palette|components|new   # design contract tooling (ffcode-write, references/ui.md)
 $FF uilint [--changed]         # UI a11y/tokens/motion/i18n leads + OFF* conformance to the design contract
 $FF uitokens                  # inventory of colours/sizes/radii/shadows/spacing in use
 $FF workspace status|sync|graph|contracts   # multi-repo, see ffcode-workspace

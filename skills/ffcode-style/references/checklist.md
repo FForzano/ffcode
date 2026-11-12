@@ -63,5 +63,5 @@ Rules of the code style, deduced from real projects (web backends and frontends,
 ## 9. Frontend/UX (when UI is touched)
 - U1 [judge] Shared UI patterns are components, shared CSS is one module/class; feature-scoped styles live next to the component. Check `DESIGN.md` / `PRODUCT.md` before adding a pattern.
 - U3 [auto] Accessibility and token hygiene leads from `ffcode uilint` (alt, labels, click-on-div, outline, contrast, hard-coded colours, reduced-motion, i18n). [IMGALT FIELDLABEL CLICKDIV OUTLINE CONTRAST HARDCOLOR MOTION I18N]
-- U4 [judge] Design context (`product`/`design`) read before UI work and updated with the change; see `ffcode-frontend`.
+- U4 [judge] Design context (`product`/`design`) read before UI work and updated with the change; see `ffcode-write/references/ui.md`.
 - U2 [judge] Texts via i18n, loading/empty/error states handled, keyboard and contrast basics.
