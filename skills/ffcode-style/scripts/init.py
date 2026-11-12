@@ -40,7 +40,7 @@ def detect(root: Path) -> tuple[list[str], dict[str, str]]:
         if "typecheck" not in cmds and (root / "tsconfig.json").is_file(): cmds["typecheck"] = "npx tsc --noEmit"
     if any(root.rglob("*.tf")) if (root / "infra").exists() or list(root.glob("*.tf")) else False:
         langs.append("terraform"); cmds.setdefault("lint", "terraform fmt -check -recursive")
-    if list(root.glob("*.sh")) or list(root.glob("*/*.sh")) or (root / "fpc").is_file():
+    if list(root.glob("*.sh")) or list(root.glob("*/*.sh")):
         langs.append("shell"); cmds.setdefault("lint", "shellcheck $(git ls-files '*.sh')")
     if list(root.glob("*.m")) or list(root.glob("*/*.m")): langs.append("matlab")
     if list(root.glob("*.html")) or list(root.glob("*/*.html")): langs.append("html")

@@ -1,6 +1,6 @@
 ---
 name: ffcode-style
-description: Federico's coding style and the shared toolbox of the ffcode skills - checklist of rules (structure, single source of truth, errors, comments, tests, git), per-language notes (Python, PHP/Yii2, TypeScript/React, shell/Terraform/AWS, MATLAB, HTML/CSS), the per-project .ffcode/ folder (config, context, style deviations, map, state, decisions) and the ffcode CLI (init, map, find, lint, check, commitmsg, workspace). Use when the user asks what the coding rules are, how to structure code in this project, what rule applies, or to run ffcode lint/map/find. The other ffcode-* skills build on this one.
+description: Federico's coding style and the shared toolbox of the ffcode skills - checklist of rules (structure, single source of truth, errors, comments, tests, git), per-language notes (Python, PHP, TypeScript/React, shell/Terraform/AWS, MATLAB, HTML/CSS), the per-project .ffcode/ folder (config, context, style deviations, map, state, decisions) and the ffcode CLI (init, map, find, lint, check, commitmsg, workspace). Use when the user asks what the coding rules are, how to structure code in this project, what rule applies, or to run ffcode lint/map/find. The other ffcode-* skills build on this one.
 ---
 
 # ffcode-style

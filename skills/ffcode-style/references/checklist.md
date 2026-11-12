@@ -1,13 +1,13 @@
 # ffcode checklist
 
-Rules of the code style, deduced from FPC (backend, frontend, aws), OFDM-RadCom-simulator, xgsail, plus general good practice.
+Rules of the code style, deduced from real projects (web backends and frontends, infrastructure, numerical/scientific code) plus general good practice.
 `[auto]` = `ffcode lint` / `ffcode check` catches it (rule id in brackets). `[judge]` = needs reading. A project may deviate in
 `.ffcode/style.md`; the deviation wins and is cited by rule id. Language details: `lang/<language>.md`.
 
 ## 1. Structure and responsibility
 - S1 [judge] **One responsibility per unit.** Thin entry layer (controller, router, CLI script, React page) → validation → service/domain
   logic → persistence/serialization. Never parsing, DB access and response shaping in one function.
-- S2 [judge] **One copy of each definition.** A formula, a status list, a price rule, a CSS block exists once, and everything else imports it.
+- S2 [judge] **One copy of each definition.** A formula, a status list, a business rule, a CSS block exists once, and everything else imports it.
   Before writing, grep for an existing one (`ffcode find NAME`). Found a duplicate: flag it, fix once agreed, never add a third. [DUP]
 - S3 [judge] **Reuse order:** existing code in the repo → library already a dependency → new maintained library, only if nothing covers it.
 - S4 [judge] **Core general, specialise where a study/feature needs it.** No parallel code path for a special case that is a parameter of the general one.

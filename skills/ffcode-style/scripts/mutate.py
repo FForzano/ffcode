@@ -2,7 +2,7 @@
   mutate.py [--root DIR] [--base REF] [--all-critical] [--list]
 Config (.ffcode/config.toml):
   [mutation]
-  critical = ["services/pricing*/**", "services/payments/**"]   # globs of code where a surviving mutant costs money/data
+  critical = ["services/billing/**", "services/payments/**"]   # globs of code where a surviving mutant costs money/data
   command  = "mutmut run --paths-to-mutate {files}"            # {files} = space-separated changed critical files
 Prints the command it runs and its tail; it does not interpret tool-specific output. Slow: run only when asked."""
 from __future__ import annotations

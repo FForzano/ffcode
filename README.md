@@ -5,7 +5,7 @@ consistency), a per-project `.ffcode/` folder, and multi-repo support.
 
 | Skill | Purpose |
 |---|---|
-| `ffcode-style` | The shared core: `references/checklist.md` (rules with ids, `[auto]`/`[judge]`), `principles.md`, `lang/` (Python, PHP/Yii2, TS/React, shell/AWS, MATLAB, HTML/CSS), `scripts/ffcode.py` (CLI: `init map find lint check commitmsg workspace`), `templates/`, `tests/run.sh`. Edit the style here only. |
+| `ffcode-style` | The shared core: `references/checklist.md` (rules with ids, `[auto]`/`[judge]`), `principles.md`, `lang/` (Python, PHP, TS/React, shell/AWS, MATLAB, HTML/CSS), `scripts/ffcode.py` (CLI: `init map find lint check commitmsg workspace`), `templates/`, `tests/run.sh`. Edit the style here only. |
 | `ffcode-init` | Adopt a repo: detect stack/commands, create `.ffcode/`, migrate CLAUDE.md into `.ffcode/context.md` (CLAUDE.md becomes `@` imports). |
 | `ffcode-map` | Compact repo map and symbol index (`map.md`, `find NAME`) instead of tree sweeps. |
 | `ffcode-write` | Implement/fix/refactor in the style: orient from `.ffcode/`, reuse, test, small steps, `check`. |

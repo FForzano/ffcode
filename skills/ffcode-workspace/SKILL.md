@@ -1,6 +1,6 @@
 ---
 name: ffcode-workspace
-description: Manage a product made of several repositories (e.g. FPC - frontend, backend, aws/devops, docs) from inside one of them - record the repos, roles and dependencies in .ffcode/workspace.toml, clone the others under .ffcode/repos (git-ignored), check status, track contract files (OpenAPI, schemas, env examples) for cross-repo changes, and plan the order of changes and deploys. Use when a change may affect another repo, when the user says "clona gli altri repo", "dipendenze tra repo", "workspace", "ordine di deploy", "il frontend dipende dal backend", or asks about the full product.
+description: Manage a product made of several repositories (e.g. frontend, backend, infrastructure, docs) from inside one of them - record the repos, roles and dependencies in .ffcode/workspace.toml, clone the others under .ffcode/repos (git-ignored), check status, track contract files (OpenAPI, schemas, env examples) for cross-repo changes, and plan the order of changes and deploys. Use when a change may affect another repo, when the user says "clona gli altri repo", "dipendenze tra repo", "workspace", "ordine di deploy", "il frontend dipende dal backend", or asks about the full product.
 ---
 
 # ffcode-workspace
