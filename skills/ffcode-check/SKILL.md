@@ -5,12 +5,12 @@ description: Mechanical pass/fail check of code changes, no judgment and no edit
 
 # ffcode-check
 
-`FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`
-Session start, once: `$FF update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
+`ff` (installed in ~/.local/bin by `install.sh`; if `command -v ff` finds nothing, prefix the call with `ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; };`)
+Session start, once: `ff update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
 
 1. Scope: default is the diff against the base (`--changed`, base from `[check] base`); `--staged` before a commit; no flag = the whole repo
    (expect legacy noise; report counts only, `lint --summary`).
-2. Run `$FF check --changed` (add `--only test` or `--only lint,typecheck` to narrow). Tool output is compressed to error lines and the tail.
+2. Run `ff check --changed` (add `--only test` or `--only lint,typecheck` to narrow). Tool output is compressed to error lines and the tail.
 3. If a configured command cannot run (container down, missing tool), report that in one line and continue; never substitute a guess.
 4. Report (≤ 12 lines): **OK/FAIL**, one line per failing step with the first relevant error lines, lint findings grouped by rule id with
    counts and first locations, skipped steps. Close with: "This covers the [auto] rules of the checklist; run ffcode-review for the rest."

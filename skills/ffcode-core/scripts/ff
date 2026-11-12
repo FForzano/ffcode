@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+# Entry point of the ffcode CLI; installed as ~/.local/bin/ff by install.sh (a symlink, so updates apply at once).
+src="${BASH_SOURCE[0]}"
+while [ -L "$src" ]; do
+  dir="$(cd -P "$(dirname "$src")" && pwd)"
+  src="$(readlink "$src")"
+  [[ "$src" == /* ]] || src="$dir/$src"
+done
+exec python3 "$(cd -P "$(dirname "$src")" && pwd)/ffcode.py" "$@"

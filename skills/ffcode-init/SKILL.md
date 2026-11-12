@@ -5,10 +5,10 @@ description: Adopt a repository into ffcode - detect languages and commands, cre
 
 # ffcode-init
 
-`FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"`
-Session start, once: `$FF update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
+`ff` (installed in ~/.local/bin by `install.sh`; if `command -v ff` finds nothing, prefix the call with `ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; };`)
+Session start, once: `ff update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
 
-1. `$FF init --dry-run`, show the detected languages and commands in two lines, then `$FF init`.
+1. `ff init --dry-run`, show the detected languages and commands in two lines, then `ff init`.
 2. Fix `config.toml` with the user only where detection is wrong or silent: commands that run in a container (`docker compose exec web ...`),
    line length to the formatter's, `[commit] style` (look at `git log --format=%s -20`: `feat(scope):` → conventional, plain sentences → imperative).
    Run each configured command once to make sure it works; a command that cannot run is commented out, not left broken.
@@ -19,4 +19,4 @@ Session start, once: `$FF update-check` (silent unless an update exists; ask the
      passages as proposals for `style.md`/removal; do not cut them without a yes.
 4. Seed `style.md` with deviations that the existing files state explicitly (e.g. "comments in Italian", "no ABC outside plugin seams"), citing rule ids.
 5. If the product spans several repos, hand over to `ffcode-workspace`.
-6. `$FF map`, then report: files created, commands detected, what was migrated, what needs the user. Do not commit.
+6. `ff map`, then report: files created, commands detected, what was migrated, what needs the user. Do not commit.

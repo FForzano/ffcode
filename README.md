@@ -25,6 +25,8 @@ At the start of a session the skills run `ffcode update-check` (silent, at most 
 only on a yes it runs `update-check --apply` (`git pull --ff-only`, then `install.sh` again in the mode used before; it refuses with local changes). Nothing updates by itself.
 `FFCODE_NO_UPDATE_CHECK=1` disables the check. `install.sh` leaves `<skills dir>/.ffcode-repo` so the repository is found after `--copy` installs too.
 
+`install.sh` also links the CLI as `~/.local/bin/ff` (`FFCODE_BIN_DIR` to change it; keep that directory in your `PATH`); it points into the installed skill, so every update applies at once, and `--uninstall` removes it.
+
 Needs `python3` ≥ 3.11 (stdlib only), `git`. Open a new Claude Code session afterwards.
 
 ## In a project

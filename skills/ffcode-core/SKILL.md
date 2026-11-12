@@ -10,31 +10,31 @@ principles in `references/principles.md`, language notes in `references/lang/<la
 `[project] languages` in `.ffcode/config.toml`). Rules are language-agnostic; the language file only maps them to the idiom.
 
 ## Updates
-At the start of a session run `$FF update-check` once (silent, at most once a week, offline-safe). If it prints `UPDATE_AVAILABLE`, ask the user whether to update (list the commit subjects);
-only on a yes run `$FF update-check --apply` (`git pull --ff-only`, then re-installs; refuses with local changes). On a no, do nothing: it asks again next week. `FFCODE_NO_UPDATE_CHECK=1` disables the check.
+At the start of a session run `ff update-check` once (silent, at most once a week, offline-safe). If it prints `UPDATE_AVAILABLE`, ask the user whether to update (list the commit subjects);
+only on a yes run `ff update-check --apply` (`git pull --ff-only`, then re-installs; refuses with local changes). On a no, do nothing: it asks again next week. `FFCODE_NO_UPDATE_CHECK=1` disables the check.
 
 ## The CLI (stdlib Python ≥ 3.11, no install)
 
 ```bash
-FF="python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py"
-$FF init                    # create .ffcode/ (detects stack and commands), never overwrites
-$FF map                     # regenerate .ffcode/map.md + symbol index (layout, entry points, symbols)
-$FF find NAME               # where is a function/class/component? file:line, instead of grepping the tree
-$FF lint [--changed|--staged] [--summary]   # LEN FUNC FILE PARAM DEBUG CODE TODO CATCH SECRET CONFLICT DUP
-$FF check [--changed]       # configured format/lint/typecheck/test/build + ffcode lint, compressed output
-$FF commitmsg "feat(x): ..."   # validate against [commit] style
-$FF refs NAME               # all usages of a name by file (rename/impact)
-$FF diffcov [--run] [--min N]   # added lines no test ran (Cobertura/Clover/lcov); `check --coverage` includes it
-$FF failwithout [--cmd CMD]     # do the tests fail when the production change is reverted? (restores files)
-$FF mutate [--list]             # optional mutation testing, only on changed files in [mutation] critical
-$FF untested [--base REF]   # fallback: symbols added in the diff that no test mentions (heuristic)
-$FF debug log FILE|-        # compress a log/trace; `debug bisect GOOD` runs git bisect on the test command
-$FF adr "Title"             # new decision record in .ffcode/decisions
-$FF ui context|init|sync|palette|components|new   # design contract tooling (ffcode-write, references/ui.md)
-$FF uilint [--changed]         # UI a11y/tokens/motion/i18n leads + OFF* conformance to the design contract
-$FF uitokens                  # inventory of colours/sizes/radii/shadows/spacing in use
-$FF workspace status|sync|graph|contracts   # multi-repo, see ffcode-workspace
-$FF release [--from B --to M]   # per-repo commits/migrations/contract changes + deploy order
+# `ff` is ~/.local/bin/ff (install.sh); fallback if missing: ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; }
+ff init                    # create .ffcode/ (detects stack and commands), never overwrites
+ff map                     # regenerate .ffcode/map.md + symbol index (layout, entry points, symbols)
+ff find NAME               # where is a function/class/component? file:line, instead of grepping the tree
+ff lint [--changed|--staged] [--summary]   # LEN FUNC FILE PARAM DEBUG CODE TODO CATCH SECRET CONFLICT DUP
+ff check [--changed]       # configured format/lint/typecheck/test/build + ffcode lint, compressed output
+ff commitmsg "feat(x): ..."   # validate against [commit] style
+ff refs NAME               # all usages of a name by file (rename/impact)
+ff diffcov [--run] [--min N]   # added lines no test ran (Cobertura/Clover/lcov); `check --coverage` includes it
+ff failwithout [--cmd CMD]     # do the tests fail when the production change is reverted? (restores files)
+ff mutate [--list]             # optional mutation testing, only on changed files in [mutation] critical
+ff untested [--base REF]   # fallback: symbols added in the diff that no test mentions (heuristic)
+ff debug log FILE|-        # compress a log/trace; `debug bisect GOOD` runs git bisect on the test command
+ff adr "Title"             # new decision record in .ffcode/decisions
+ff ui context|init|sync|palette|components|new   # design contract tooling (ffcode-write, references/ui.md)
+ff uilint [--changed]         # UI a11y/tokens/motion/i18n leads + OFF* conformance to the design contract
+ff uitokens                  # inventory of colours/sizes/radii/shadows/spacing in use
+ff workspace status|sync|graph|contracts   # multi-repo, see ffcode-workspace
+ff release [--from B --to M]   # per-repo commits/migrations/contract changes + deploy order
 ```
 All take `--root DIR`; the root is the nearest ancestor with `.ffcode/`, else the git top level.
 
@@ -56,9 +56,9 @@ Token rule: read `context.md`, `style.md`, `state.md`, then `map.md`; use `find`
 To change a rule for all projects, edit `references/` here; for one project, `.ffcode/style.md`.
 
 ## Navigating with the map (replaces a tree sweep)
-Read `.ffcode/map.md` (create it with `$FF map` if missing or stale after pulls/moves): directories (files, lines), entry points, commands, top-level symbols per file with line numbers (capped at 400 lines;
-Python, PHP, TS/JS, MATLAB, shell, Terraform). Then `$FF find NAME` (substring) → `file:line`, and read only that range. `$FF refs NAME` for all usages by file. Symbols may be stale: confirm before editing.
+Read `.ffcode/map.md` (create it with `ff map` if missing or stale after pulls/moves): directories (files, lines), entry points, commands, top-level symbols per file with line numbers (capped at 400 lines;
+Python, PHP, TS/JS, MATLAB, shell, Terraform). Then `ff find NAME` (substring) → `file:line`, and read only that range. `ff refs NAME` for all usages by file. Symbols may be stale: confirm before editing.
 
 ## Decisions
-Durable choices go in `.ffcode/decisions/NNNN-title.md` (`$FF adr "Title"`; fill Context, Decision, Consequences, Alternatives in 5–10 lines; committed). Before re-opening a topic read the matching record; a settled decision is
+Durable choices go in `.ffcode/decisions/NNNN-title.md` (`ff adr "Title"`; fill Context, Decision, Consequences, Alternatives in 5–10 lines; committed). Before re-opening a topic read the matching record; a settled decision is
 not re-litigated unless asked or a stated consequence failed. A standing rule is also one line in `style.md`/`context.md`; a superseding record says "Supersedes NNNN". Choosing between options: 2–3 real ones, a recommendation and why; ask only for business facts.

@@ -15,6 +15,7 @@ for a in "$@"; do case "$a" in
 
 skills=(); for d in "$REPO"/skills/*/; do skills+=("$(basename "$d")"); done
 mkdir -p "$DEST"
+BIN="${FFCODE_BIN_DIR:-$HOME/.local/bin}"
 
 state() { local t="$DEST/$1"
   if [ -L "$t" ]; then [ "$(readlink "$t")" = "$REPO/skills/$1" ] && echo linked || echo "linked elsewhere -> $(readlink "$t")"
@@ -27,6 +28,10 @@ install_one() { local s="$1" t="$DEST/$1"
   if [ "$mode" = link ]; then ln -s "$REPO/skills/$s" "$t"; else cp -R "$REPO/skills/$s" "$t"; fi
   echo "  $s: $(state "$s")"; }
 
+link_cli() { mkdir -p "$BIN"; ln -sfn "$DEST/ffcode-core/scripts/ff" "$BIN/ff"; echo "  ff: $BIN/ff"
+  case ":$PATH:" in *":$BIN:"*) ;; *) echo "  warning: $BIN is not in PATH (add it to your shell profile)" ;; esac; }
+unlink_cli() { [ -L "$BIN/ff" ] && case "$(readlink "$BIN/ff")" in "$DEST"/*) rm "$BIN/ff"; echo "  removed $BIN/ff" ;; esac; true; }
+
 prune() { for l in "$DEST"/ffcode-*; do [ -L "$l" ] && [ ! -e "$l" ] && rm "$l" && echo "  removed stale $(basename "$l")"; done; true; }
 case "$action" in
   update) git -C "$REPO" remote | grep -q . && git -C "$REPO" pull --ff-only || echo "no remote; reinstalling"
@@ -36,8 +41,9 @@ case "$action" in
   uninstall) for s in "${skills[@]}"; do t="$DEST/$s"; if [ -L "$t" ] && [ "$(readlink "$t")" = "$REPO/skills/$s" ]; then rm "$t"; echo "  removed $s"; elif [ -d "$t" ]; then echo "  $s: copy left in place (remove by hand)"; fi; done ;;
   status) for s in "${skills[@]}"; do echo "  $s: $(state "$s")"; done ;;
 esac
-if [ "$action" = install ] || [ "$action" = update ]; then echo "$REPO $mode" > "$DEST/.ffcode-repo"; fi
-if [ "$action" = uninstall ]; then rm -f "$DEST/.ffcode-repo"; fi
+if [ "$action" = install ] || [ "$action" = update ]; then echo "$REPO $mode" > "$DEST/.ffcode-repo"; link_cli; fi
+if [ "$action" = uninstall ]; then rm -f "$DEST/.ffcode-repo"; unlink_cli; fi
+if [ "$action" = status ]; then echo "  ff: $([ -x "$BIN/ff" ] && readlink "$BIN/ff" || echo "not installed")"; fi
 if [ "$action" != uninstall ]; then
   python3 -c 'import sys,tomllib; assert sys.version_info>=(3,11)' 2>/dev/null && echo "python3 OK (>=3.11)" || echo "WARNING: python3 >= 3.11 required"
   echo "New Claude Code session needed to pick up the skills."
