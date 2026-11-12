@@ -6,7 +6,7 @@ allowed-tools: Bash(ff:*)
 
 # ffcode-review
 
-`ff` (CLI of ffcode-core)
+`ff` (CLI of ffcode-core). First `ff sync --quick` (completes `.ffcode/`, refreshes caches); a NEEDS line is for the developer: mention it, don't block. `ff flow --impact FILE` lists the endpoints and commands a changed file can affect.
 
 1. Scope: the diff vs base (`git diff <base>...HEAD`), a PR (`gh pr diff N`), or the files named. Start with `git diff --stat`; read hunks, not whole files, unless a hunk cannot be judged without its function.
 2. Run `ff report review --check` first (scope, hotspots, lint counts, contract files; use its skeleton for the output). Its findings are not repeated in prose; cite them by rule id and count. Run `ff orient --no-map` (deviations in `rules.toml`/`style.md` are not findings; `ff rules --judge` lists them). `ff hotspots` says where problems concentrate; ARCHNAME/ARCHDEP findings (S7) are architecture drift.

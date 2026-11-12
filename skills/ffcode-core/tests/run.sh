@@ -214,4 +214,71 @@ $FF update-check --apply | grep -q UPDATED || fail "update-check apply"
 [ -f "$R/repo/f" ] && [ -f "$R/dest/marker" ] || fail "update-check apply result"
 [ -z "$($FF update-check --force)" ] || fail "update-check up to date is silent"
 unset FFCODE_REPO XDG_CACHE_HOME CLAUDE_SKILLS_DIR
+# flow: entry points, chains, effects, impact, generated cards; sync: self-configuration. A throwaway HOME keeps the user's Claude settings out of it.
+OLDHOME="$HOME"; FH="$(mktemp -d)"; export HOME="$FH"
+FL="$(mktemp -d)"; git -C "$FL" init -q -b main; git -C "$FL" config user.email t@t; git -C "$FL" config user.name t
+mkdir -p "$FL/app"
+cat > "$FL/app/api.py" <<'PY'
+from fastapi import FastAPI
+from app.services import OrderService
+
+app = FastAPI()
+
+
+@app.post("/orders")
+def create_order(payload: OrderIn) -> OrderOut:
+    svc = OrderService()
+    return svc.place(payload)
+PY
+cat > "$FL/app/services.py" <<'PY'
+import requests
+
+
+class OrderService:
+    def place(self, p):
+        self.audit(p)
+        requests.post("https://x.example/y")
+        raise ValueError("no")
+
+    def audit(self, p):
+        db.session.add(p)
+PY
+cat > "$FL/app/cli.py" <<'PY'
+import click
+from app.services import OrderService
+
+
+@click.command("sync-orders")
+def sync_orders():
+    OrderService().audit(1)
+PY
+cat > "$FL/server.js" <<'JS'
+const express = require('express');
+const app = express();
+function listUsers(req, res) { res.json([]); }
+app.get('/users', listUsers);
+app.post('/users', (req, res) => { fetch('http://x.example'); res.send('ok'); });
+JS
+git -C "$FL" add -A; git -C "$FL" commit -qm init
+out=$($FF flow --root "$FL"); for k in "POST /orders" "GET /users" "sync-orders"; do grep -q "$k" <<<"$out" || fail "flow-list $k"; done
+out=$($FF flow --root "$FL" "POST /orders"); grep -q "OrderService::place" <<<"$out" || fail flow-chain
+grep -q "http out" <<<"$out" || fail flow-effect-http; grep -q "db write" <<<"$out" || fail flow-effect-db; grep -q "ValueError" <<<"$out" || fail flow-errors
+grep -q "(payload: OrderIn) -> OrderOut" <<<"$out" || fail flow-signature
+$FF flow --root "$FL" "POST /users" | grep -q "http out" || fail flow-inline-handler
+$FF flow --root "$FL" "GET /users" | grep -q "listUsers" || fail flow-named-handler
+out=$($FF flow --root "$FL" --impact app/services.py); grep -q "POST /orders" <<<"$out" && grep -q "sync-orders" <<<"$out" || fail flow-impact
+$FF flow --root "$FL" --mermaid "POST /orders" | grep -q "sequenceDiagram" || fail flow-mermaid
+$FF flow --root "$FL" --write .ffcode/flows >/dev/null; $FF flow --root "$FL" --check .ffcode/flows | grep -q "up to date" || fail flow-check
+echo "def extra(): pass" >> "$FL/app/services.py"; sed -i.bak 's/audit(p)/audit2(p)/' "$FL/app/services.py"; rm -f "$FL/app/services.py.bak"
+! $FF flow --root "$FL" --check .ffcode/flows >/dev/null || fail flow-check-stale
+$FF flow --root "$FL" --doctor | grep -q "entry points: 4" || fail flow-doctor
+# sync: a skill used in a repo without .ffcode creates it; a plain prompt does not; the prompt hook adds NEEDS once per session
+SY="$(mktemp -d)"; git -C "$SY" init -q -b main; printf 'x=1\n' > "$SY/a.py"
+echo '{"prompt":"fix the typo","cwd":"'$SY'","session_id":"s1"}' | $FF hook prompt >/dev/null; [ ! -d "$SY/.ffcode" ] || fail sync-plain-prompt
+echo '{"prompt":"/ffcode-write add a thing","cwd":"'$SY'","session_id":"s1"}' | $FF hook prompt | grep -q "created" || fail sync-skill-prompt
+[ -f "$SY/.ffcode/config.toml" ] || fail sync-created
+out=$(echo '{"prompt":"again","cwd":"'$SY'","session_id":"s1"}' | $FF hook prompt); ! grep -q "created" <<<"$out" || fail sync-idempotent
+$FF orient --root "$SY" --no-map | grep -q "^# root" || fail sync-orient
+$FF sync --root "$SY" --json | grep -q '"needs"' || fail sync-json
+rm -rf "$FL" "$SY" "$FH"; export HOME="$OLDHOME"
 echo "all ok"

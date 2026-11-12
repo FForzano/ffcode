@@ -14,7 +14,7 @@ from common import DIRNAME, SCHEMA, find_root, load_config
 
 TEMPLATES = Path(__file__).resolve().parent.parent / "templates"
 FILES = ["rules.toml", "glossary.md", "architecture.toml"]
-IGNORE = ["map.md", "workspace-map.md", "cache/", "repos/", "state.md"]
+IGNORE = ["map.md", "workspace-map.md", "cache/", "repos/", "state.md", "flows/"]
 
 
 def version(root: Path) -> int:

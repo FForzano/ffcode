@@ -221,7 +221,7 @@ def analyze(root, o: dict, answers: dict | None = None) -> dict | None:
                               f"are not named *{suffix}. Enforce the *{suffix} name anyway (they would be flagged)?",
                               "no", [("no", "No, leave names free"), ("yes", f"Yes, enforce *{suffix}")]))
         for b, n in row.items():
-            if share[b] <= o["allow_share"] * 3:
+            if n >= 2 and share[b] <= o["allow_share"] * 3:
                 questions.append((1 + abs(share[b] - o["allow_share"]), f"edge:{layer}>{b}",
                                   f"{n} of {len(fs)} files in '{layer}' import '{b}'. Does the architecture allow that dependency?",
                                   "allow" if b in default_ok else "forbid",

@@ -9,9 +9,9 @@ allowed-tools: Bash(ff:*)
 `ff` (CLI of ffcode-core); rules: `ff rules --judge` (judgment rules + notes of the project's languages; the `[auto]` ones are run by `ff check`).
 
 ## Protocol
-1. **Orient cheaply.** No `.ffcode/` → offer `ffcode-init` (do not block on it). Else `ff orient`. Multi-repo
+1. **Orient cheaply.** `ff orient` runs `ff sync` (creates/upgrades `.ffcode/`, refreshes caches) and prints NEEDS: ask the developer first (AskUserQuestion, then the command shown). Multi-repo
    product and the change crosses a repo boundary (API, schema, env var, event) → `ffcode-workspace` first.
-2. **Locate, don't sweep.** `ff find` for the symbols involved; read only the needed ranges. Look for an existing function that does it (S2, S3) before writing.
+2. **Locate, don't sweep.** `ff find` for the symbols involved; `ff flow QUERY` (logic of an endpoint/command), `--impact FILE` (what a change reaches); read only the needed ranges. Look for an existing function that does it (S2, S3) before writing.
 3. **Plan in ≤ 6 lines** when the change touches more than one file or a public contract: files, the test that will prove it, the risk. Ask the user only
    on a business rule or an irreversible action. Trivial change: skip the plan.
 4. **Tests:** `ff tests-for FILE` names its tests (`--run` executes them); see `references/tests.md` (diff coverage, `failwithout`, optional mutation on critical areas) when tests are requested or the change lacks them. **Test first for bugs** (reproduce with a failing test), **test with the code for features** (T1). Narrowest test after each step.

@@ -1,7 +1,8 @@
 """Hooks that make the skills' routine steps deterministic.
   ff hook session-start     Claude Code SessionStart: update notice, refresh a stale map, one status line (silent outside .ffcode/ projects)
+  ff hook prompt            Claude Code UserPromptSubmit: ff sync on every prompt (quick, background refresh); creates .ffcode/ only when the prompt names an ffcode skill
   ff hook stop              Claude Code Stop: lint of the diff, blocks once only when the findings changed since the last report
-  ff hooks install [--project] [--remove]   add/remove the two hooks in ~/.claude/settings.json (or ./.claude/settings.json)
+  ff hooks install [--project] [--remove]   add/remove the hooks in ~/.claude/settings.json (or ./.claude/settings.json)
   ff hooks status           are the Claude Code hooks installed (user or project)?
   ff hooks git [--remove]   git hooks post-merge/post-checkout/post-rewrite that refresh .ffcode/map.md in the background"""
 from __future__ import annotations
@@ -17,7 +18,7 @@ from pathlib import Path
 from common import DIRNAME, find_root, git, run
 
 FF = Path(__file__).resolve().parent / "ff"
-EVENTS = {"SessionStart": "hook session-start", "Stop": "hook stop"}
+EVENTS = {"SessionStart": "hook session-start", "UserPromptSubmit": "hook prompt", "Stop": "hook stop"}
 MARK = ("# >>> ffcode map", "# <<< ffcode map")
 CACHE = Path(os.environ.get("XDG_CACHE_HOME", Path.home() / ".cache")) / "ffcode"
 
@@ -31,17 +32,34 @@ def _ff(*args, cwd=None):
     return run([str(FF), *args], cwd=cwd)
 
 
+def _session_id(d):
+    return str(d.get("session_id") or "")
+
+
+def prompt():
+    """UserPromptSubmit: what it prints is added to the prompt's context."""
+    import re
+    d = _stdin()
+    root = find_root(d.get("cwd") or None)
+    names_skill = bool(re.search(r"(?<![\w-])/?ffcode(?:-[a-z]+)?\b", d.get("prompt") or ""))
+    if not (root / DIRNAME).is_dir() and not names_skill: return 0
+    import sync
+    log, needs = sync.sync(root, init=names_skill, quick=True, session=_session_id(d))
+    out = sync.format_output(log, needs)
+    if out: print(out)
+    return 0
+
+
 def session_start():
-    _stdin(); root = find_root()
+    d = _stdin(); root = find_root(d.get("cwd") or None)
     if not (root / DIRNAME).is_dir(): return 0
     _, upd = _ff("update-check", cwd=root)
     if upd.strip(): print(upd.strip() + "\nAsk the user whether to update; only on a yes run `ff update-check --apply`.")
-    m = root / DIRNAME / "map.md"
-    rc, ct = git(["log", "-1", "--format=%ct"], root)
-    if rc == 0 and ct.strip().isdigit() and (not m.is_file() or m.stat().st_mtime < int(ct)): _ff("map", cwd=root)
     if hint_due(): print(HINT)
-    import upgrade
-    upgrade.auto(root)
+    import sync
+    log, needs = sync.sync(root, quick=True, session=_session_id(d))
+    out = sync.format_output(log, needs)
+    if out: print(out)
     print(f"ffcode: {DIRNAME}/ present in {root.name}; `ff orient` loads context, style, state and map in one call.")
     return 0
 
@@ -129,6 +147,7 @@ def git_hooks(remove):
 def main():
     kind, a = sys.argv[1], sys.argv[2:]
     if kind == "hook" and a[:1] == ["session-start"]: return session_start()
+    if kind == "hook" and a[:1] == ["prompt"]: return prompt()
     if kind == "hook" and a[:1] == ["stop"]: return stop()
     if kind == "hooks" and a[:1] == ["install"]: return install("--project" in a, "--remove" in a)
     if kind == "hooks" and a[:1] == ["status"]:

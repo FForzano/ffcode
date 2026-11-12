@@ -6,7 +6,7 @@ allowed-tools: Bash(ff:*)
 
 # ffcode-workspace
 
-`ff` (CLI of ffcode-core); config `.ffcode/workspace.toml` (template: `ffcode-core/templates/workspace.toml`).
+`ff` (CLI of ffcode-core). First `ff sync --quick` (completes `.ffcode/`, refreshes caches); a NEEDS line is for the developer: mention it, don't block. Config `.ffcode/workspace.toml` (template: `ffcode-core/templates/workspace.toml`).
 
 ## Set up
 1. Create `.ffcode/workspace.toml`: one `[[repo]]` per repository with `name`, `url`, `role`, `depends_on`, `contracts` (paths inside that repo that other repos rely on:

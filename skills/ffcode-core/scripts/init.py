@@ -82,7 +82,7 @@ def main():
         "rules.toml": (TEMPLATES / "rules.toml").read_text(),
         "architecture.toml": (TEMPLATES / "architecture.toml").read_text(),
         "glossary.md": (TEMPLATES / "glossary.md").read_text(),
-        ".gitignore": "# generated or personal, not shared\nmap.md\nworkspace-map.md\ncache/\nrepos/\nstate.md\n",
+        ".gitignore": "# generated or personal, not shared\nmap.md\nworkspace-map.md\ncache/\nrepos/\nstate.md\nflows/\n",
     }
     print(f"root: {root}\nlanguages: {langs or '-'}\ncommands: {cmds or '-'}")
     for n, body in files.items():

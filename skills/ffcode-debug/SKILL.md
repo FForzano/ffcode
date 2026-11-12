@@ -6,7 +6,7 @@ allowed-tools: Bash(ff:*)
 
 # ffcode-debug
 
-`ff` (CLI of ffcode-core)
+`ff` (CLI of ffcode-core). First `ff sync --quick` (completes `.ffcode/`, refreshes caches); a NEEDS line is for the developer: mention it, don't block. `ff flow QUERY` shows the chain behind an endpoint or command; `ff flow --impact FILE` what a change reaches.
 
 1. **Compress the evidence, don't paste it.** `ff debug log FILE` (or `cmd 2>&1 | ff debug log -`): error lines, frames inside this repo, tail. Work from that.
 2. **Reproduce first.** Smallest failing test or command (`[commands] test` narrowed to one test). No reproduction → say what is missing; ask for the input/env, don't guess a fix.

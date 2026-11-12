@@ -3,5 +3,7 @@ max_description_chars = 300          # descriptions are always in context
 max_descriptions_total_chars = 2100
 [max_skill_md_chars]                 # loaded when the skill is used
 default = 2700
-ffcode-core = 4500
-ffcode-workspace = 3700
+ffcode-core = 6400
+ffcode-workspace = 3900
+ffcode-write = 3000
+ffcode-init = 2900

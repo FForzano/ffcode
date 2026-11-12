@@ -1,6 +1,6 @@
 """One call instead of four file reads: .ffcode/context.md, style.md, state.md and the head of map.md, each with a header.
   ff orient [--map-lines N] [--no-map]   (default 200 map lines; `ff find` for the rest)
-Without .ffcode/ prints NO_FFCODE (offer ffcode-init)."""
+Runs `ff sync` first: creates/upgrades .ffcode/ and refreshes what is stale, then prints NEEDS (what the developer must decide)."""
 from __future__ import annotations
 
 import argparse
@@ -12,9 +12,14 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--map-lines", type=int, default=200); ap.add_argument("--no-map", action="store_true"); ap.add_argument("--root")
     a = ap.parse_args()
     root = find_root(a.root); d = root / DIRNAME
+    import sync
+    is_repo = (root / ".git").exists()
+    log, needs = sync.sync(root, init=is_repo, quick=False)          # creates .ffcode/ in a git repo, upgrades, refreshes, lists NEEDS
     if not d.is_dir():
-        print("NO_FFCODE: no .ffcode/ here; offer ffcode-init, do not block on it"); return 0
+        print("NO_FFCODE: not a git repository, so .ffcode/ was not created; run `ff init` there if wanted"); return 0
     print(f"# root: {root}")
+    out = sync.format_output(log, needs)
+    if out: print(out)
     import hooks
     if hooks.hint_due(): print("NOTE: " + hooks.HINT)
     import upgrade

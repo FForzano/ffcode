@@ -8,7 +8,7 @@ model: haiku
 
 # ffcode-check
 
-`ff` (CLI of ffcode-core)
+`ff` (CLI of ffcode-core). First `ff sync --quick` (completes `.ffcode/`, refreshes caches); a NEEDS line is for the developer: mention it, don't block.
 
 1. Scope: default is the diff against the base (`--changed`, base from `[check] base`); `--staged` before a commit; no flag = the whole repo
    (expect legacy noise; report counts only, `lint --summary`).

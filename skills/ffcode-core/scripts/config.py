@@ -24,6 +24,7 @@ SCHEMA = {
     "infer": {"min_files": int, "strict": float, "purity": float, "name_purity": float, "allow_share": float, "max_questions": int,
               "suffixes": list, "exclude": list, "merge": list},
 }
+FLOW = {"depth": int, "ignore": list, "entrypoint": list, "effects": dict}
 WS_REPO = {"name": str, "self": bool, "role": str, "url": str, "branch": str, "local": str, "contracts": list, "depends_on": list}
 
 
@@ -62,6 +63,22 @@ def design_toml(f: Path, errors, warns):
     for sec in ("type", "space", "radius"):
         sc = d.get(sec, {}).get("scale")
         if sc is not None and not (isinstance(sc, list) and all(isinstance(x, (int, float)) for x in sc)): errors.append(f"design.toml: {sec}.scale must be a list of numbers")
+
+
+def flow_toml(f: Path, errors, warns):
+    d = load(f, errors)
+    if d is None: return
+    for k, v in d.items():
+        if k not in FLOW: warns.append(f"flow.toml: unknown key {k}"); continue
+        typed("flow.toml", k, v, FLOW[k], errors)
+    for i, e in enumerate(d.get("entrypoint", []) if isinstance(d.get("entrypoint"), list) else []):
+        where = f"flow.toml: entrypoint[{i}]"
+        if e.get("kind", "http") not in ("http", "cli", "job", "event"): errors.append(f"{where}: kind must be http, cli, job or event")
+        try: re.compile(e.get("pattern", ""))
+        except re.error as ex: errors.append(f"{where}: pattern is not a valid regex ({ex})")
+        if not e.get("pattern"): errors.append(f"{where}: pattern is required")
+        for k in e:
+            if k not in ("kind", "file", "pattern"): warns.append(f"{where}: unknown key {k}")
 
 
 def rules_toml(f: Path, errors, warns):
@@ -112,7 +129,7 @@ def main():
     ap = argparse.ArgumentParser(); ap.add_argument("--validate", action="store_true"); ap.add_argument("--root"); a = ap.parse_args()
     root = find_root(a.root); d = root / DIRNAME
     errors, warns, seen = [], [], []
-    for name, fn in (("config.toml", config_toml), ("design.toml", design_toml), ("workspace.toml", workspace_toml), ("rules.toml", rules_toml), ("architecture.toml", architecture_toml)):
+    for name, fn in (("config.toml", config_toml), ("design.toml", design_toml), ("workspace.toml", workspace_toml), ("rules.toml", rules_toml), ("architecture.toml", architecture_toml), ("flow.toml", flow_toml)):
         if (d / name).is_file(): seen.append(name); fn(d / name, errors, warns)
     if not seen: print("no .ffcode/*.toml here"); return 0
     for w in warns: print("warn ", w)

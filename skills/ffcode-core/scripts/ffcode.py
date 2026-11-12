@@ -13,7 +13,9 @@
   pr | report review|summary   facts for the PR description / review / final summary, Claude fills only the why
   commit-plan            group the changed files into proposed commits, flag what to leave out
   tests-for FILE.. | --changed [--run]   the tests that cover those files (generated tests-map)   hotspots   churn x size ranking
+  flow [QUERY | --impact X | --write | --doctor]   entry points (routes, commands, jobs) and the logic behind each, derived from the code
   arch [show L | new NAME | infer]   project architecture (layers, naming, allowed imports) and what a new entity needs
+  sync [--init] [--quick]   complete and refresh .ffcode/ automatically; lists what only the developer can answer (NEEDS)
   upgrade [--dry-run] [--all DIR]   bring already initialized projects up to the current .ffcode/ layout
   budget [--check]       token size of the skills               update-check [--apply]   weekly update check
   hooks install|git      Claude Code hooks / git hooks          hook session-start|stop   (called by those hooks)"""
@@ -27,13 +29,13 @@ SUB = {"init": ("init", None), "map": ("mapper", "build"), "find": ("mapper", "f
        "refs": ("refs", None), "untested": ("untested", None), "adr": ("adr", None), "debug": ("debug", None), "release": ("release", None),
        "diffcov": ("diffcov", None), "failwithout": ("failwithout", None), "mutate": ("mutate", None),
        "uilint": ("uilint", None), "uitokens": ("uitokens", None), "ui": ("ui", None), "update-check": ("update_check", None),
-       "rules": ("rules", None), "upgrade": ("upgrade", None), "arch": ("arch", None), "tests-for": ("indexes", "tests-for"), "hotspots": ("indexes", "hotspots"), "config": ("config", None), "pr": ("report", "pr"), "report": ("report", None), "commit-plan": ("commitplan", None), "orient": ("orient", None), "budget": ("budget", None),
+       "rules": ("rules", None), "upgrade": ("upgrade", None), "arch": ("arch", None), "tests-for": ("indexes", "tests-for"), "hotspots": ("indexes", "hotspots"), "config": ("config", None), "pr": ("report", "pr"), "report": ("report", None), "commit-plan": ("commitplan", None), "orient": ("orient", None), "flow": ("flow", None), "sync": ("sync", None), "budget": ("budget", None),
        "hook": ("hooks", "hook"), "hooks": ("hooks", "hooks")}
 
 if len(sys.argv) < 2 or sys.argv[1] not in SUB:
     print(__doc__); sys.exit(0 if len(sys.argv) < 2 or sys.argv[1] in ("-h", "--help", "help") else 2)
 mod, pre = SUB[sys.argv[1]]
-if sys.argv[1] not in ("init", "upgrade", "hooks", "budget", "config", "update-check", "adr"):
+if sys.argv[1] not in ("init", "upgrade", "hooks", "budget", "config", "update-check", "adr", "sync"):
     import upgrade
     from common import find_root
     _root = sys.argv[sys.argv.index("--root") + 1] if "--root" in sys.argv[:-1] else None

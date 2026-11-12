@@ -8,6 +8,7 @@ allowed-tools: Bash(ff:*)
 
 `ff` (CLI of ffcode-core)
 
+0. `ff sync` already ran and may have created `.ffcode/`; this is the guided version (confirmations, CLAUDE.md migration, commands).
 1. `ff init --dry-run`, show the detected languages and commands in two lines, then `ff init`.
 2. Fix `config.toml` with the user only where detection is wrong or silent: commands that run in a container (`docker compose exec web ...`),
    line length to the formatter's, `[commit] style` (look at `git log --format=%s -20`: `feat(scope):` → conventional, plain sentences → imperative).

@@ -7,7 +7,7 @@ disable-model-invocation: true
 
 # ffcode-commit
 
-`ff` (CLI of ffcode-core). Commit and push only when the user asked; on the main branch, branch first.
+`ff` (CLI of ffcode-core). First `ff sync --quick` (completes `.ffcode/`, refreshes caches); a NEEDS line is for the developer: mention it, don't block. Commit and push only when the user asked; on the main branch, branch first.
 
 1. `git status --short` and `git diff --stat`. Unrelated changes, generated files, `.ffcode/repos/`, `.ffcode/map.md`, secrets or large binaries → leave out and say so (G2).
 2. `ff commit-plan` proposes the split (groups, tests paired with their code, files to leave out); correct it if wrong, then stage with explicit paths, never `git add -A`.
