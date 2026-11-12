@@ -1,0 +1,7 @@
+# Token budget of the skills, checked by `ff budget --check` (and tests/run.sh). 1 token ~ 4 chars.
+max_description_chars = 300          # descriptions are always in context
+max_descriptions_total_chars = 2100
+[max_skill_md_chars]                 # loaded when the skill is used
+default = 2700
+ffcode-core = 4500
+ffcode-workspace = 3700

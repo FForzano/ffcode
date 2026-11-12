@@ -13,6 +13,7 @@ Rules of the code style, deduced from real projects (web backends and frontends,
 - S4 [judge] **Core general, specialise where a study/feature needs it.** No parallel code path for a special case that is a parameter of the general one.
 - S5 [judge] **No speculative abstraction.** ABCs/interfaces only at real plugin seams; otherwise a function or a plain data type. No half-finished work, no flags for hypothetical futures.
 - S6 [auto] Size: functions ≤ `max_function_lines`, files ≤ `max_file_lines`, ≤ `max_params` parameters; beyond that split or pass a typed object. [FUNC FILE PARAM]
+- S7 [auto] The declared architecture (`.ffcode/architecture.toml`: layers, names, allowed imports, conventions) is followed; a new unit imitates the `example` of its layer; `ff arch new NAME` lists the units a new entity needs. [ARCHNAME ARCHDEP]
 
 ## 2. Data, config, state
 - D1 [judge] Configuration is explicit and validated at the edge (frozen dataclass, typed config object); passed as an argument, not read from globals or the environment deep in the code.
@@ -32,7 +33,7 @@ Rules of the code style, deduced from real projects (web backends and frontends,
 - C2 [judge] Long explanations, derivations, design rationale go to `docs/` (or `.ffcode/decisions/`), linked from the code.
 - C3 [judge] Code derived from a source (paper equation, API doc, spec) cites it with its exact tag/section at the function.
 - C4 [auto] No commented-out code, no `TODO` without owner or issue: `TODO(name)` / `TODO(#12)`. [CODE TODO]
-- C5 [auto] No debug leftovers (`print`, `console.log`, `var_dump`, `debugger`) outside CLI/scripts. [DEBUG]
+- C5 [auto] No debug leftovers (`print`, `console.log`, `var_dump`, `debugger`) outside CLI/scripts, no merge-conflict markers. [DEBUG CONFLICT]
 - C6 [judge] A rule that is easy to get wrong later is pinned by a test **named after the rule**, and the comment says which test.
 
 ## 5. Naming and readability

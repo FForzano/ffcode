@@ -17,13 +17,32 @@ consistency), a per-project `.ffcode/` folder, and multi-repo support.
 ## Install
 
 ```bash
-./install.sh            # symlink into ~/.claude/skills   (--copy, --update, --status, --uninstall)
+./install.sh            # symlink into ~/.claude/skills   (--copy, --update, --status, --uninstall); then offers the hooks
+ff hooks install        # if you skipped it: update check, map refresh, lint at the end of a turn
 skills/ffcode-core/tests/run.sh   # smoke tests
 ```
-### Updates
-At the start of a session the skills run `ffcode update-check` (silent, at most once a week, offline-safe). If the repository has new commits, Claude lists them and **asks** whether to update;
-only on a yes it runs `update-check --apply` (`git pull --ff-only`, then `install.sh` again in the mode used before; it refuses with local changes). Nothing updates by itself.
-`FFCODE_NO_UPDATE_CHECK=1` disables the check. `install.sh` leaves `<skills dir>/.ffcode-repo` so the repository is found after `--copy` installs too.
+### Hooks and updates
+**After installing, run `ff hooks install`** (`install.sh` asks and does it for you; `--hooks` / `--no-hooks` skip the question). Without them the update check, map refresh and end-of-turn lint do not run on their own. `ff hooks status` tells whether they are installed; until they are, `ff orient` reminds Claude to tell you, at most once a week (`FFCODE_NO_HOOKS_HINT=1` silences it).
+`ff hooks install` (run by you, once per machine; `--project` for one repo, `--remove` undoes it) adds two Claude Code hooks so the routine steps do not depend on Claude remembering them:
+- **SessionStart**: weekly update check (silent, offline-safe; if there are new commits Claude lists them and **asks**; only on a yes it runs `update-check --apply`), refreshes a stale `.ffcode/map.md`, one status line. Silent outside `.ffcode/` projects.
+- **Stop**: `ff lint --changed` on the diff; blocks once, only when the findings differ from the last report.
+
+Without the hooks, `ffcode-core` tells Claude to run `ff update-check` itself. `ff hooks git` (also run by `ffcode-init`) refreshes the map in the background after pull/checkout/rebase. `FFCODE_NO_UPDATE_CHECK=1` disables the update check.
+`install.sh` leaves `<skills dir>/.ffcode-repo` so the repository is found after `--copy` installs too.
+
+### Scripted facts
+`lint --json` and `check --json` (machine-readable), `ff config --validate`, `ff pr` / `ff report review|summary` (diff facts into `templates/report-*.md`, only the reasoning is left to write), `ff commit-plan` (proposed commit split).
+`tests/consistency.py` keeps `checklist.md` and the lint rules in agreement.
+
+### Project files that scripts read
+`.ffcode/architecture.toml` (the project's pattern: layers/object kinds with paths, names, allowed imports, API conventions; `ff arch`, `ff arch new NAME`, lint ARCHNAME/ARCHDEP), `.ffcode/rules.toml` (deviations the scripts apply, with reason and optional ADR), `baseline.json` (known legacy findings), `decisions/index.md` (generated from the ADR headers, `ff adr --list --rule ID`), `glossary.md` (searched by `ff find`), `contracts.lock` (agreed contract versions) and the generated, git-ignored `workspace-map.md`, `cache/tests-map.json` (`ff tests-for`) and `cache/hotspots.json` (`ff hotspots`).
+
+### Aligning existing projects
+Automatic: the first `ff` command in an older project (or the SessionStart hook) runs the upgrade by itself (no git hooks), prints one line and leaves the new files uncommitted; `FFCODE_NO_AUTO_UPGRADE=1` turns it off. Manually, `ff upgrade` (`--dry-run` first; `--all ~/dev` for every project under a folder) adds the files and `.gitignore` lines introduced since the project was initialized, refreshes map and indexes, installs the map git hooks, validates and records `.ffcode/version`. It never overwrites content. `ff orient` and the SessionStart hook warn when a project is behind.
+
+### Token budget
+`ff budget` shows description / SKILL.md / reference sizes; `ff budget --check` (run by the tests) fails when a limit in `skills/ffcode-core/budget.toml` is exceeded.
+Judgment rules only: `ff rules --judge`; one-call orientation: `ff orient`. `ffcode-check` runs in a forked haiku subagent, `ffcode-commit` only on explicit request.
 
 `install.sh` also links the CLI as `~/.local/bin/ff` (`FFCODE_BIN_DIR` to change it; keep that directory in your `PATH`); it points into the installed skill, so every update applies at once, and `--uninstall` removes it.
 

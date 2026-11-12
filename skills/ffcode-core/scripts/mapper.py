@@ -87,6 +87,8 @@ def main():
         if not a.out:
             cache.parent.mkdir(parents=True, exist_ok=True)
             cache.write_text(json.dumps({f: [[i, k, n] for i, k, n in s] for f, s in idx.items()}))
+            import indexes
+            indexes.build_all(root, [f for f in tracked_files(root) if is_text(root / f)])
         print(f"wrote {out} ({len(text.splitlines())} lines, {len(idx)} files with symbols)")
     else:
         if not cache.is_file():
@@ -95,6 +97,10 @@ def main():
         else:
             idx = json.loads(cache.read_text())
         q = a.name.lower(); hit = 0
+        gl = root / DIRNAME / "glossary.md"
+        if gl.is_file():
+            for l in gl.read_text().splitlines():
+                if q in l.lower() and l.startswith(("|", "- ")) and not l.startswith("|--"): print(f"glossary: {l.strip()}"); hit += 1
         for f, syms in sorted(idx.items()):
             for i, k, n in syms:
                 if q in n.lower():

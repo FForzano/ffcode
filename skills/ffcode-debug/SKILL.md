@@ -1,12 +1,12 @@
 ---
 name: ffcode-debug
-description: Systematic debugging and triage - compress a log or stack trace to the frames in this repo, reproduce with a failing test, narrow down with git bisect on the project's test command, fix the cause not the symptom, and pin it with a regression test. Use when the user reports a bug, an error message, a failing test or CI run, a regression ("prima funzionava"), or says "debugga", "perché fallisce", "trova il commit che l'ha rotto", "analizza questo log".
+description: Systematic debugging: compress logs/traces, reproduce with a failing test, git bisect, fix the cause, pin it with a regression test. Use for bugs, errors, failing tests or CI, "prima funzionava", "debugga", "analizza questo log".
+allowed-tools: Bash(ff:*)
 ---
 
 # ffcode-debug
 
-`ff` (installed in ~/.local/bin by `install.sh`; if `command -v ff` finds nothing, prefix the call with `ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; };`)
-Session start, once: `ff update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
+`ff` (CLI of ffcode-core)
 
 1. **Compress the evidence, don't paste it.** `ff debug log FILE` (or `cmd 2>&1 | ff debug log -`): error lines, frames inside this repo, tail. Work from that.
 2. **Reproduce first.** Smallest failing test or command (`[commands] test` narrowed to one test). No reproduction → say what is missing; ask for the input/env, don't guess a fix.

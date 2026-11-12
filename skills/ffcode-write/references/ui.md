@@ -2,7 +2,7 @@
 
 UI is recognised, not announced: files like `*.tsx *.jsx *.vue *.svelte *.html *.css *.scss`, or `[check] ui = true` / `.ffcode/design.toml` present.
 Engineering rules stay those of `ffcode-core`; this adds a **design contract** (`.ffcode/design.toml`) that keeps the look consistent and scripts that check it.
-`ff` (installed in ~/.local/bin by `install.sh`; if `command -v ff` finds nothing, prefix the call with `ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; };`)
+`ff` (CLI of ffcode-core)
 
 ## 1. Orient (one call, ~40 lines)
 `ff ui context` → stack, product notes, the contract (colour roles, type/space/radius/z scales, fonts, motion, rules), component count and most used, lint counts.

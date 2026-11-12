@@ -1,12 +1,12 @@
 ---
 name: ffcode-workspace
-description: Manage and release a product made of several repositories (e.g. frontend, backend, infrastructure, docs) from inside one of them - record the repos, roles and dependencies in .ffcode/workspace.toml, clone the others under .ffcode/repos (git-ignored), check status, track contract files (OpenAPI, schemas, env examples) for cross-repo changes, and plan the order of changes and deploys. Use when a change may affect another repo, when the user says "clona gli altri repo", "dipendenze tra repo", "workspace", "ordine di deploy", "il frontend dipende dal backend", "prepara la release", "cosa c'è in develop che non è in main", "changelog", or asks about the full product or a deploy spanning backend, frontend, docs and infra.
+description: Multi-repo products (frontend, backend, infra, docs): .ffcode/workspace.toml, clone the other repos, status, contract changes, change and deploy order, release notes. Use for "clona gli altri repo", "ordine di deploy", "prepara la release", "changelog", or when a change may affect another repo.
+allowed-tools: Bash(ff:*)
 ---
 
 # ffcode-workspace
 
-`ff` (installed in ~/.local/bin by `install.sh`; if `command -v ff` finds nothing, prefix the call with `ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; };`); config `.ffcode/workspace.toml` (template: `ffcode-core/templates/workspace.toml`).
-Session start, once: `ff update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
+`ff` (CLI of ffcode-core); config `.ffcode/workspace.toml` (template: `ffcode-core/templates/workspace.toml`).
 
 ## Set up
 1. Create `.ffcode/workspace.toml`: one `[[repo]]` per repository with `name`, `url`, `role`, `depends_on`, `contracts` (paths inside that repo that other repos rely on:
@@ -17,7 +17,7 @@ Session start, once: `ff update-check` (silent unless an update exists; ask the 
 3. Write a 10–20 line "Product map" in `.ffcode/context.md`: what each repo owns, who calls whom, how it deploys and in which order.
 
 ## Use
-- `ff workspace status` (branch, dirty, ahead/behind), `graph` (dependencies), `where NAME` (path), `contracts [--changed]` (hash of the contract files; `CHANGED` since last run).
+- `ff workspace status` (branch, dirty, ahead/behind), `graph` (dependencies), `where NAME` (path), `contracts [--changed]` (hash of the contract files against `.ffcode/contracts.lock`: `CHANGED`/`NEW`/`REMOVED`; `--accept` records the versions once repos agree), `map` (writes `.ffcode/workspace-map.md`: roles, dependents, contracts, env keys; `sync` refreshes it).
 - **Before changing a contract** (endpoint, DTO, schema, env var, event): list consumers via `graph`, read the consuming code with `ff find` inside `.ffcode/repos/<consumer>` (`--root` that path after the map (`ffcode-core`) there, or plain grep for the specific name),
   and write the cross-repo plan: order of merges/deploys, backward compatibility window, docs to update. Backend-first additive changes; breaking changes only with a documented migration.
 - Do **not** edit a cloned repo unless the user asks; if asked, work in its own branch and commit there (it is a separate repository).

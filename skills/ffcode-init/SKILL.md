@@ -1,12 +1,12 @@
 ---
 name: ffcode-init
-description: Adopt a repository into ffcode - detect languages and commands, create the .ffcode/ folder (config, context, style, state, gitignore), migrate the existing CLAUDE.md/AGENTS.md into .ffcode/context.md leaving a pointer, and generate the first map. Use when the user says "inizializza ffcode", "adotta questo repo", "setup .ffcode", "migra il CLAUDE.md", or starts the ffcode skills in a repo that has no .ffcode/.
+description: Adopt a repo into ffcode: detect stack and commands, create .ffcode/, migrate CLAUDE.md into context.md, first map. Use for "inizializza ffcode", "adotta questo repo", "migra il CLAUDE.md", or a repo without .ffcode/.
+allowed-tools: Bash(ff:*)
 ---
 
 # ffcode-init
 
-`ff` (installed in ~/.local/bin by `install.sh`; if `command -v ff` finds nothing, prefix the call with `ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; };`)
-Session start, once: `ff update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
+`ff` (CLI of ffcode-core)
 
 1. `ff init --dry-run`, show the detected languages and commands in two lines, then `ff init`.
 2. Fix `config.toml` with the user only where detection is wrong or silent: commands that run in a container (`docker compose exec web ...`),
@@ -19,4 +19,6 @@ Session start, once: `ff update-check` (silent unless an update exists; ask the 
      passages as proposals for `style.md`/removal; do not cut them without a yes.
 4. Seed `style.md` with deviations that the existing files state explicitly (e.g. "comments in Italian", "no ABC outside plugin seams"), citing rule ids.
 5. If the product spans several repos, hand over to `ffcode-workspace`.
-6. `ff map`, then report: files created, commands detected, what was migrated, what needs the user. Do not commit.
+5a. Backend or layered code: `ff arch infer`, show the draft, and with the user set `style`, `may_import` and `stem`, then `ff arch infer --write`; add `[conventions]` (URLs, errors, pagination, ids) by hand.
+5b. Legacy repo with many lint findings: offer `ff lint --baseline` (and `ff uilint --baseline`) so only new problems show; project-specific rule exceptions go in `rules.toml` with a reason.
+6. `ff config --validate`, `ff map`, `ff hooks git` (refreshes the map after pull/checkout/rebase), then report: files created, commands detected, what was migrated, what needs the user. Do not commit.

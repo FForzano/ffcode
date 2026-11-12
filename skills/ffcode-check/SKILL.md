@@ -1,12 +1,14 @@
 ---
 name: ffcode-check
-description: Mechanical pass/fail check of code changes, no judgment and no edits - runs the project's configured format, lint, typecheck, test and build commands plus ffcode lint (function/file size, debug leftovers, commented-out code, TODOs, empty catch, secrets, merge markers, duplicated blocks) and returns a short compressed report. Use when the user says "controlla", "check", "lancia i test", "è tutto a posto?", "prima del commit", "verifica il diff", without asking for a review or for code to be written.
+description: Mechanical pass/fail of code changes, no edits: runs the project's format, lint, typecheck, test, build and ffcode lint and returns a short report. Use for "controlla", "check", "lancia i test", "è tutto a posto?", "prima del commit".
+allowed-tools: Bash(ff:*)
+context: fork
+model: haiku
 ---
 
 # ffcode-check
 
-`ff` (installed in ~/.local/bin by `install.sh`; if `command -v ff` finds nothing, prefix the call with `ff() { python3 ~/.claude/skills/ffcode-core/scripts/ffcode.py "$@"; };`)
-Session start, once: `ff update-check` (silent unless an update exists; ask the user before `--apply`, see ffcode-core).
+`ff` (CLI of ffcode-core)
 
 1. Scope: default is the diff against the base (`--changed`, base from `[check] base`); `--staged` before a commit; no flag = the whole repo
    (expect legacy noise; report counts only, `lint --summary`).
@@ -16,4 +18,4 @@ Session start, once: `ff update-check` (silent unless an update exists; ask the 
    counts and first locations, skipped steps. Close with: "This covers the [auto] rules of the checklist; run ffcode-review for the rest."
 5. Do not fix anything here. If the user asks to fix, hand over to `ffcode-write`.
 
-Findings on lines the diff did not touch are legacy: mention the count, do not list them.
+Findings recorded in `.ffcode/baseline.json` or waived in `.ffcode/rules.toml` are already hidden (the lint line says how many). Findings on lines the diff did not touch are legacy: mention the count, do not list them.

@@ -1,0 +1,29 @@
+# The architecture of this project, read by the scripts (ff arch, ff lint ARCHNAME/ARCHDEP, ff orient) so new code follows the same shape.
+# Draft it with `ff arch infer`, then edit. Leave it commented if the project has no pattern worth enforcing.
+# [architecture]
+# style = "rest-layered"            # rest-layered | mvc | hexagonal | cqrs | components | cli | pipeline | ... (a label for humans)
+# summary = "JSON REST API; controllers stay thin, rules live in services"
+#
+# [[layer]]                         # one block per kind of unit/object, listed from the outside in
+# name = "controller"
+# paths = ["app/Http/Controllers/**"]
+# name_pattern = ".*Controller"     # regex that file stems in these paths must match      (ARCHNAME)
+# may_import = ["service", "dto"]   # layers it may depend on; absent = not checked        (ARCHDEP)
+# role = "thin: validate the request, call a service, shape the response"
+# base = "BaseController"           # parent class/trait to extend, informational
+# stem = "{Name}Controller"         # used by `ff arch new Order` to name the file
+# example = "app/Http/Controllers/CustomerController.php"   # the unit to imitate
+#
+# [[layer]]
+# name = "service"
+# paths = ["app/Services/**"]
+# name_pattern = ".*Service"
+# may_import = ["repository", "entity", "dto"]
+# role = "business rules; no HTTP types, no SQL"
+#
+# [conventions]                     # free text, shown by `ff arch`; one line each
+# urls = "plural kebab-case nouns, /v1 prefix: /v1/order-items"
+# errors = "RFC 7807 problem+json; 422 for validation"
+# pagination = "?page & ?per_page, envelope {data, meta}"
+# ids = "uuid v7, never auto-increment in URLs"
+# dates = "ISO 8601, UTC"
