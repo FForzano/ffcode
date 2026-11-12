@@ -14,5 +14,5 @@ description: Review a diff, branch, PR or set of files as a demanding colleague 
    For each suspected defect, check it in the code before reporting: no finding without a file:line you read.
 4. Report, ranked, max ~15 items: `[severity] rule-id file:line — problem — suggested fix (one line)`. Severity: **blocker** (wrong/insecure/data-loss), **major** (rule S/E/T broken),
    **minor** (style). Then "Good" in ≤ 3 lines only if something is worth keeping. No praise padding, no restating the diff.
-5. UI in the diff: add the `ffcode-frontend` view (system consistency, states, a11y, copy) after `uilint` hits; use `critique.md` for screens, not for code review.
+5. UI in the diff: add the UI view after `uilint`/OFF* hits: contract conformance, reuse of existing components (`ui components`), states, a11y, copy (`ffcode-frontend/references/build.md`).
 6. Do not edit. If the user wants the fixes applied, hand over to `ffcode-write` with the findings list.

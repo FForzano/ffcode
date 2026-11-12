@@ -71,4 +71,44 @@ CSS
 git add -A; out=$($FF uilint || true)
 for id in IMGALT FIELDLABEL CLICKDIV HTMLLANG CONTRAST OUTLINE TINYFONT TRANSALL ZINDEX HARDCOLOR; do grep -q "^$id " <<<"$out" || fail "uilint missing $id"; done
 $FF uitokens | grep -q "#777777" || fail uitokens
+# design contract: init, palette, sync, offtoken, components, new
+mkdir -p src/components
+cat > src/components/Card.tsx <<'TSX'
+export interface CardProps { title: string; tone?: string }
+export function Card({ title }: CardProps) { return <div className="card">{title}</div>; }
+TSX
+cat > src/App.tsx <<'TSX'
+import { Card } from './components/Card';
+export const App = () => <Card title="x" />;
+TSX
+echo '{"dependencies":{"react":"1"}}' > package.json; touch tsconfig.json
+cat > .ffcode/design.toml <<'TOML'
+[color.light]
+surface = "#ffffff"
+text = "#111111"
+muted = "#bbbbbb"
+brand = "#d10c33"
+brand-contrast = "#ffffff"
+[type]
+scale = [12, 14, 16, 24]
+[space]
+base = 4
+scale = [0, 4, 8, 16]
+[radius]
+scale = [0, 8]
+[ui]
+output = "src/styles/tokens.css"
+TOML
+out=$($FF ui palette || true); grep -q "muted" <<<"$out" || fail palette
+out=$($FF ui palette --fix || true); grep -q -- "->" <<<"$out" || fail palette-fix
+$FF ui sync >/dev/null; grep -q -- "--color-brand: #d10c33" src/styles/tokens.css || fail sync
+cat > src/x.css <<'CSS'
+.x { color: #123456; font-size: 15px; padding: 7px; border-radius: 5px; }
+CSS
+git add -A; out=$($FF uilint || true)
+for id in OFFCOLOR OFFSIZE OFFSPACE OFFRADIUS; do grep -q "^$id " <<<"$out" || fail "uilint missing $id"; done
+$FF ui components | grep -q "Card" || fail components
+$FF ui new Badge --dry-run | grep -q "Badge.tsx" || fail new
+$FF ui context | grep -q "components: 1" || fail context
+$FF ui init --stdout | grep -q "\[type\]" || fail ui-init
 echo "all ok"

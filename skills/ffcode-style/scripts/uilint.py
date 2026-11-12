@@ -9,7 +9,7 @@ import sys
 from collections import defaultdict
 from pathlib import Path
 
-from common import find_root, is_text, load_config, tracked_files
+from common import find_root, is_text, load_config, load_contract, tracked_files
 
 RULES = {
     "IMGALT": "<img> without alt", "FIELDLABEL": "input/select/textarea without id, aria-label or aria-labelledby",
@@ -20,6 +20,8 @@ RULES = {
     "VIEWPORT": "viewport blocks zoom (user-scalable=no / maximum-scale=1)", "HTMLLANG": "<html> without lang",
     "GRADTEXT": "gradient text (background-clip: text)", "BORDERACCENT": "coloured side border thicker than 1px (accent stripe)",
     "MOTION": "animations in the project but no prefers-reduced-motion anywhere", "I18N": "hard-coded visible text in a project that uses i18n",
+    "OFFCOLOR": "colour not in the design contract", "OFFSIZE": "font-size not in the type scale of the contract",
+    "OFFSPACE": "spacing not in the contract scale (or a multiple of its base)", "OFFRADIUS": "radius not in the contract scale",
     "INLINESTYLE": "many inline styles in one file (move to the style system)",
 }
 UI = {".html", ".css", ".scss", ".sass", ".less", ".jsx", ".tsx", ".vue", ".svelte", ".js", ".ts"}
@@ -112,6 +114,37 @@ def check_style(f, text, vs, token_file, out):
             out.append((n, "HARDCOLOR", l.strip()[:60]))
 
 
+def nearest(v, options):
+    return min(options, key=lambda o: abs(o - v)) if options else None
+
+
+def check_contract(f, text, contract, out):
+    """Values in styles, inline styles and Tailwind arbitrary values that the design contract does not know. Only changed files in practice."""
+    cols = {c.lower() for th in contract.get("color", {}).values() for c in (th.values() if isinstance(th, dict) else [th]) if isinstance(c, str)}
+    cols = {"#%02x%02x%02x" % rgb_of(c) for c in cols if rgb_of(c)} | {"#000000", "#ffffff"}
+    sizes = {float(x) for x in contract.get("type", {}).get("scale", [])}
+    space = {float(x) for x in contract.get("space", {}).get("scale", [])}; base = contract.get("space", {}).get("base", 4)
+    rad = {float(x) for x in contract.get("radius", {}).get("scale", [])} | {9999.0}
+    pxv = lambda x: float(x[:-2]) if x.endswith("px") else float(x[:-3]) * 16 if x.endswith("rem") else None
+    for n, l in enumerate(text.splitlines(), 1):
+        if l.lstrip().startswith(("//", "/*", "*")) or "var(" in l and not re.search(r"#[0-9a-fA-F]{3,8}\b", l): continue
+        for m in list(HEX.finditer(l)) + list(RGB.finditer(l)):
+            c = rgb_of(m.group(0))
+            if c and "#%02x%02x%02x" % c not in cols and cols:
+                near = min(cols, key=lambda k: sum(abs(p - q) for p, q in zip(rgb_of(k), c)))
+                out.append((n, "OFFCOLOR", f"{m.group(0)} (nearest token {near})"))
+        for m in re.finditer(r"font-?[sS]ize\s*[:=]\s*[\"'{]?\s*(-?\d+(?:\.\d+)?(?:px|rem))|text-\[(\d+(?:\.\d+)?(?:px|rem))\]", l):
+            v = pxv(m.group(1) or m.group(2))
+            if v is not None and sizes and v not in sizes: out.append((n, "OFFSIZE", f"{v:g}px (nearest {nearest(v, sizes):g})"))
+        for m in re.finditer(r"(?:margin|padding|gap)[\w-]*\s*[:=]\s*[\"'{]?\s*([^;\"'}\n]+)|\b(?:[mp][trblxy]?|gap)-\[(\d+(?:\.\d+)?px)\]", l):
+            for tok in re.findall(r"-?\d+(?:\.\d+)?(?:px|rem)", m.group(1) or m.group(2)):
+                v = abs(pxv(tok))
+                if space and v not in space and (not base or v % base) and v > 1: out.append((n, "OFFSPACE", f"{v:g}px (nearest {nearest(v, space):g})"))
+        for m in re.finditer(r"border-?[rR]adius\s*[:=]\s*[\"'{]?\s*(\d+(?:\.\d+)?(?:px|rem))|rounded-\[(\d+(?:\.\d+)?px)\]", l):
+            v = pxv(m.group(1) or m.group(2))
+            if v is not None and rad and v not in rad: out.append((n, "OFFRADIUS", f"{v:g}px (nearest {nearest(v, rad):g})"))
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--root"); ap.add_argument("--changed", action="store_true"); ap.add_argument("--staged", action="store_true")
@@ -129,12 +162,15 @@ def main():
     i18n = bool(re.search(r"i18next|react-intl|vue-i18n|formatjs|lingui", pkg))
     motion_used = any(re.search(r"@keyframes|animation\s*:|transition\s*:|framer-motion", t) for t in texts.values()) or "framer-motion" in pkg
     reduced = any("prefers-reduced-motion" in t or "useReducedMotion" in t or "reducedMotion" in t for t in texts.values())
+    contract = load_contract(root)
+    tokenfile_of = lambda f, t: bool(TOKENFILE.search(str(f)) or re.search(r"^\s*:root\b", t, re.M))
     findings = []
     for f in sorted(scope):
         if f not in texts: continue
         t, out = texts[f], []
         if f.suffix in MARKUP: check_markup(f, lines_of(t), i18n, out)
         if f.suffix in STYLE: check_style(f, t, vs, bool(TOKENFILE.search(str(f)) or re.search(r"^\s*:root\b", t, re.M)), out)
+        if contract and not tokenfile_of(f, t): check_contract(f, t, contract, out)
         findings += [(f, n, r, m) for n, r, m in out if r in active]
     if motion_used and not reduced and "MOTION" in active and not (a.changed or a.staged): findings.append((Path("(project)"), 0, "MOTION", "no prefers-reduced-motion / useReducedMotion found"))
     by = defaultdict(list)
@@ -145,8 +181,11 @@ def main():
             if a.summary: continue
             for f, n, m in by[r][:8]: print(f"  {f}:{n}: {m}")
             if len(by[r]) > 8: print(f"  ... +{len(by[r]) - 8}")
-    print(f"uilint: {len(findings)} finding(s) in {len(scope)} file(s)")
-    return 1 if findings else 0
+    strict = bool((contract or {}).get("ui", {}).get("strict"))
+    hard = [x for x in findings if strict or not x[2].startswith("OFF")]
+    adv = len(findings) - len(hard)
+    print(f"uilint: {len(findings)} finding(s) in {len(scope)} file(s)" + (f" ({adv} OFF* advisory: [ui] strict = false)" if adv else ""))
+    return 1 if hard else 0
 
 
 if __name__ == "__main__":

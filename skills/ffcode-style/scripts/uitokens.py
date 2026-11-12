@@ -16,9 +16,8 @@ def norm_color(v):
     return "#%02x%02x%02x" % c if c else None
 
 
-def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--root"); ap.add_argument("--top", type=int, default=12)
-    a = ap.parse_args(); root = find_root(a.root)
+def scan(root):
+    """-> (files, cnt{kind: Counter}, where{kind: {value: {files}}}, props{--name: (value, file)})"""
     files = [f for f in tracked_files(root) if f.suffix in UI and is_text(root / f) and not {"node_modules", "build", "dist"} & set(f.parts) and ".min." not in f.name]
     cnt = defaultdict(Counter); where = defaultdict(lambda: defaultdict(set)); props = {}
     for f in files:
@@ -35,6 +34,13 @@ def main():
                 if m and "var(" not in m.group(1): cnt[k][m.group(1).strip()[:50]] += 1; where[k][m.group(1).strip()[:50]].add(str(f))
             for m in re.finditer(r"(?:margin|padding)(?:-\w+)?\s*:\s*([^;}\n]+)", l):
                 for v in re.findall(r"-?\d+(?:\.\d+)?(?:px|rem)", m.group(1)): cnt["spacing"][v] += 1
+    return files, cnt, where, props
+
+
+def main():
+    ap = argparse.ArgumentParser(); ap.add_argument("--root"); ap.add_argument("--top", type=int, default=12)
+    a = ap.parse_args(); root = find_root(a.root)
+    files, cnt, where, props = scan(root)
     print(f"files scanned: {len(files)}; custom properties defined: {len(props)}")
     byval = defaultdict(list)
     for k, (v, f) in props.items():

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""ffcode: one entry point. ffcode.py {init|map|find|refs|lint|check|untested|diffcov|failwithout|mutate|uilint|uitokens|commitmsg|workspace|release|debug|adr} [args]"""
+"""ffcode: one entry point. ffcode.py {init|map|find|refs|lint|check|untested|diffcov|failwithout|mutate|uilint|uitokens|ui|commitmsg|workspace|release|debug|adr} [args]"""
 import os
 import sys
 
@@ -9,7 +9,7 @@ SUB = {"init": ("init", None), "map": ("mapper", "build"), "find": ("mapper", "f
        "check": ("check", None), "commitmsg": ("commitmsg", None), "workspace": ("workspace", None),
        "refs": ("refs", None), "untested": ("untested", None), "adr": ("adr", None), "debug": ("debug", None), "release": ("release", None),
        "diffcov": ("diffcov", None), "failwithout": ("failwithout", None), "mutate": ("mutate", None),
-       "uilint": ("uilint", None), "uitokens": ("uitokens", None)}
+       "uilint": ("uilint", None), "uitokens": ("uitokens", None), "ui": ("ui", None)}
 
 if len(sys.argv) < 2 or sys.argv[1] not in SUB:
     sys.exit(__doc__)

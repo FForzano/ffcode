@@ -57,6 +57,12 @@ def load_config(root: Path) -> dict:
     return cfg
 
 
+def load_contract(root: Path) -> dict | None:
+    """.ffcode/design.toml (machine-readable design contract) or None."""
+    f = root / DIRNAME / "design.toml"
+    return tomllib.loads(f.read_text()) if f.is_file() else None
+
+
 def tracked_files(root: Path, only_changed=False, staged=False, base=None):
     """Files to look at: tracked + untracked-not-ignored; or changed vs HEAD/base; or staged."""
     if staged:

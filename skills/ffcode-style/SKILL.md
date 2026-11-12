@@ -26,7 +26,8 @@ $FF mutate [--list]             # optional mutation testing, only on changed fil
 $FF untested [--base REF]   # fallback: symbols added in the diff that no test mentions (heuristic)
 $FF debug log FILE|-        # compress a log/trace; `debug bisect GOOD` runs git bisect on the test command
 $FF adr "Title"             # new decision record in .ffcode/decisions
-$FF uilint [--changed]         # UI a11y/tokens/motion/i18n leads (ffcode-frontend)
+$FF ui context|init|sync|palette|components|new   # design contract tooling (ffcode-frontend)
+$FF uilint [--changed]         # UI a11y/tokens/motion/i18n leads + OFF* conformance to the design contract
 $FF uitokens                  # inventory of colours/sizes/radii/shadows/spacing in use
 $FF workspace status|sync|graph|contracts   # multi-repo, see ffcode-workspace
 $FF release [--from B --to M]   # per-repo commits/migrations/contract changes + deploy order
@@ -42,6 +43,7 @@ All take `--root DIR`; the root is the nearest ancestor with `.ffcode/`, else th
 | `style.md` | yes | deviations from the checklist by rule id + project conventions |
 | `decisions/` | yes | one short ADR per durable decision |
 | `state.md` | no | personal work in progress |
+| `design.toml` | yes | UI projects: machine-readable design contract (colour roles, scales, fonts, motion) |
 | `workspace.toml` | yes | other repos of the product, roles, dependencies, contracts |
 | `map.md`, `cache/`, `repos/`, `state.md` | no (`.ffcode/.gitignore`) | generated map; caches; clones of the other repos |
 
