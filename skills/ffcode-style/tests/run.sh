@@ -28,4 +28,8 @@ $FF map >/dev/null; $FF find f | grep -q "pkg/a.py:4" || fail find
 $FF commitmsg "feat(x): add y" >/dev/null || fail commitmsg-ok
 $FF commitmsg "Added y." >/dev/null && fail commitmsg-bad
 $FF check --changed >/dev/null || true
+$FF refs f | grep -q "usage" || fail refs
+$FF adr "Use X" | grep -q "0001-use-x" || fail adr
+echo "boom at pkg/a.py:4" | $FF debug log - | grep -q "frames" || fail debug
+$FF untested --base HEAD >/dev/null || true
 echo "all ok"

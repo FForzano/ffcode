@@ -19,7 +19,12 @@ $FF find NAME               # where is a function/class/component? file:line, in
 $FF lint [--changed|--staged] [--summary]   # LEN FUNC FILE PARAM DEBUG CODE TODO CATCH SECRET CONFLICT DUP
 $FF check [--changed]       # configured format/lint/typecheck/test/build + ffcode lint, compressed output
 $FF commitmsg "feat(x): ..."   # validate against [commit] style
+$FF refs NAME               # all usages of a name by file (rename/impact)
+$FF untested [--base REF]   # symbols added in the diff that no test mentions
+$FF debug log FILE|-        # compress a log/trace; `debug bisect GOOD` runs git bisect on the test command
+$FF adr "Title"             # new decision record in .ffcode/decisions
 $FF workspace status|sync|graph|contracts   # multi-repo, see ffcode-workspace
+$FF release [--from B --to M]   # per-repo commits/migrations/contract changes + deploy order
 ```
 All take `--root DIR`; the root is the nearest ancestor with `.ffcode/`, else the git top level.
 
