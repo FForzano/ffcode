@@ -194,6 +194,25 @@ rm .ffcode/architecture.toml; $FF arch infer --write >/dev/null; grep -q '^name_
 out=$($FF arch infer --write || true); grep -q "not overwritten" <<<"$out" || fail arch-no-overwrite
 rm -f .ffcode/arch-answers.toml .ffcode/architecture.toml
 rm -rf app/services/sub app/migrations app/controllers/SecondController.py; git add -A
+# packages mode: no suffix pattern, the packages are the layers, observed imports are allowed, cycles are reported
+P="$(mktemp -d)"; ( cd "$P"; git init -q -b main; git config user.email t@t; git config user.name t; mkdir -p lib/core lib/io lib/viz
+printf 'x=1\n' > lib/core/a.py; printf 'x=1\n' > lib/core/b.py; printf 'from lib.core.a import x\n' > lib/io/r.py
+printf 'from lib.core.b import x\n' > lib/io/w.py; printf 'from lib.io.r import x\nfrom lib.core.a import x\n' > lib/viz/p.py
+printf 'x=1\n' > lib/viz/q.py; printf 'from lib.viz.p import x\n' > lib/core/bad.py; printf 'x=1\n' > lib/util.py; printf 'from lib import util\nfrom . import w\n' > lib/io/u.py; git add -A
+inf=$($FF arch infer --packages); grep -q 'style = "packages"' <<<"$inf" || fail arch-packages-style
+grep -q 'paths = \["lib/viz/\*\*"\]' <<<"$inf" || fail arch-packages-root; grep -q 'paths = \["lib/util.py"\]' <<<"$inf" || fail arch-packages-module
+grep -A4 'name = "io"' <<<"$inf" | grep -q 'may_import = \["core", "util"\]' || fail arch-packages-edges
+grep -q "CYCLE    core, io, viz" <<<"$($FF arch infer --check)" || fail arch-packages-cycle
+$FF init >/dev/null; $FF arch infer --packages --write >/dev/null; printf 'from lib.viz.p import x\n' > lib/io/n.py; git add -A
+grep -q "ARCHDEP" <<<"$($FF lint || true)" || fail arch-packages-dep
+$FF arch graph | grep -q "io --> core" || fail arch-graph ); [ -d "$P" ] && rm -rf "$P"
+# packages mode on a frontend monorepo: src layout, '@/' alias, containers expanded into their packages
+P="$(mktemp -d)"; ( cd "$P"; git init -q -b main; git config user.email t@t; git config user.name t; mkdir -p apps/web/src/components apps/web/src/hooks packages/ui/src packages/core/src
+for i in 1 2; do printf 'export const x=1\n' > apps/web/src/hooks/use$i.ts; printf 'import {x} from "@/hooks/use1"\n' > apps/web/src/components/C$i.tsx
+printf 'export const y=1\n' > packages/ui/src/b$i.ts; printf 'import {y} from "../../ui/src/b1"\n' > packages/core/src/c$i.ts; printf 'import {x} from "./c1"\n' >> packages/core/src/c$i.ts; done
+git add -A; inf=$($FF arch infer --packages); grep -q 'name = "components"' <<<"$inf" || fail arch-packages-frontend
+grep -A5 'name = "components"' <<<"$inf" | grep -q 'may_import = \["hooks"\]' || fail arch-packages-alias; grep -q 'name = "core"' <<<"$inf" || fail arch-packages-monorepo )
+[ -d "$P" ] && rm -rf "$P"
 printf '[architecture]\nstyle = "t"\n[[layer]]\nname = "controller"\npaths = ["app/controllers/**"]\nmay_import = ["service"]\n[[layer]]\nname = "repository"\npaths = ["app/repos/**"]\n[[layer]]\nname = "service"\npaths = ["app/services/**"]\nname_pattern = ".*Service"\nstem = "{Name}Service"\n' > .ffcode/architecture.toml
 out=$({ $FF lint || true; }); grep -q "app/services/helpers.py:1: helpers" <<<"$out" || fail arch-name; grep -q "ARCHDEP" <<<"$out" || fail arch-dep
 $FF arch new Foo | grep -q "app/services/FooService.py  missing" || fail arch-new; $FF arch | grep -q "controller" || fail arch-summary

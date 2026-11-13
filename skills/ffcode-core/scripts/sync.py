@@ -82,7 +82,7 @@ def compute_needs(root: Path) -> list[dict]:
         o, ans = arch_infer.options(root), arch_infer.load_answers(root)
         model = arch_infer.analyze(root, o, ans)
         if model and not (ar and ar.get("layer")):
-            needs.append({"id": "architecture", "msg": f"the code has {len(model['layers'])} recurring layers but .ffcode/architecture.toml is empty",
+            needs.append({"id": "architecture", "msg": f"the code has {len(model['layers'])} {'packages' if model['style'] == 'packages' else 'recurring layers'} but .ffcode/architecture.toml is empty",
                           "cmd": "ff arch infer --interview, ask the questions, then ff arch infer --answer id=value ... --write"})
         elif model and json.loads(arch_infer.interview(model, ans, o["max_questions"]))["questions"]:
             needs.append({"id": "architecture-questions", "msg": "the architecture draft has open questions", "cmd": "ff arch infer --interview"})
