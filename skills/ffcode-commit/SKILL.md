@@ -11,7 +11,7 @@ disable-model-invocation: true
 
 1. `git status --short` and `git diff --stat`. Unrelated changes, generated files, `.ffcode/repos/`, `.ffcode/map.md`, secrets or large binaries → leave out and say so (G2).
 2. `ff commit-plan` proposes the split (groups, tests paired with their code, files to leave out); correct it if wrong, then stage with explicit paths, never `git add -A`.
-3. `ff check --staged`. A FAIL stops the commit; report it.
+3. `ff check --staged`. A FAIL stops the commit; report it. UNVERIFIED (exit 3, a step timed out) is not a pass and not a failure, so it does not stop the commit by itself: say so to the user, and if they go ahead put what was not verified in the message body or the summary. The test step is scoped to the staged files when `[commands] test_one` is set; if a `note:` says it is not, tell the developer.
 4. Message: look at the project's style (`[commit] style` in config, else `git log --format=%s -10`). Subject ≤ 72, imperative, what + scope; body only for the why, wrapped. Validate with `ff commitmsg "..."`.
    Add attribution lines when the session instructions require them.
 5. PR (only if asked, `gh pr create`): `ff pr --check` fills What, How tested, Cross-repo impact and Migration notes from the diff; you write only the Why (2–3 lines) and the title (like a commit subject). No push or PR without confirmation.

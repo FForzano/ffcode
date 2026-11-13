@@ -67,7 +67,7 @@ def main():
     if a.check:
         _, cj = run([sys.executable, str(HERE / "check.py"), "--root", str(root), "--changed", "--json"])
         try:
-            c = json.loads(cj); tested += "\nff check: " + c["result"] + " (" + ", ".join(f"{s['step']} {'ok' if s['ok'] else 'FAIL'}" for s in c["steps"]) + ")"
+            c = json.loads(cj); tested += "\nff check: " + c["result"] + " (" + ", ".join(f"{s['step']} {'ok' if s['ok'] else ('TIMEOUT' if s.get('timeout') else 'FAIL')}" for s in c["steps"]) + ")"
         except ValueError: tested += "\nff check: could not run"
     else: tested += "\nff check: not run here (add --check)"
     hs = root / DIRNAME / "cache" / "hotspots.json"

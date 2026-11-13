@@ -2,7 +2,7 @@
 
 | File | Committed | Content |
 |---|---|---|
-| `config.toml` | yes | languages, `[commands]` (format_check, lint, typecheck, test, coverage, build; wrap docker/ssh here), `[limits]`, `[commit]`, `[check]`, `[coverage]` (report, min), `[mutation]` (critical globs, command) |
+| `config.toml` | yes | languages, `[commands]` (format_check, lint, typecheck, test, test_one, coverage, build; wrap docker/ssh here; `test_one` with `{files}` makes `ff check --changed/--staged` run only the tests covering the diff), `[limits]`, `[commit]`, `[check]` (secrets, base, ui, `test_timeout` 900 s, `scoped_test_timeout` 300 s; a timed-out step is TIMEOUT/UNVERIFIED, not FAIL: exit code 3), `[coverage]` (report, min), `[mutation]` (critical globs, command) |
 | `context.md` | yes | what the project is, architecture, invariants, command list (migrated from CLAUDE.md) |
 | `style.md` | yes | discursive conventions of the project (naming, layering, language of comments) |
 | `rules.toml` | yes | deviations the scripts apply and `ff rules` shows: `[rule.ID] ignore/off/note/reason/adr` (see `templates/rules.toml`); they win over the checklist |

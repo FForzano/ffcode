@@ -72,17 +72,23 @@ def _load(root: Path, name: str, builder):
     return json.loads(f.read_text()) if f.is_file() else builder
 
 
-def tests_for():
-    ap = argparse.ArgumentParser(); ap.add_argument("files", nargs="*"); ap.add_argument("--changed", action="store_true")
-    ap.add_argument("--run", action="store_true"); ap.add_argument("--root")
-    a = ap.parse_args(); root = find_root(a.root); cfg = load_config(root)
-    files = [str(f) for f in tracked_files(root, True, False, cfg["check"].get("base"))] if a.changed else a.files
+def covering_tests(root: Path, files):
+    """Tests that cover the given files: (found test paths, source files with no test)."""
     tm = _load(root, "tests-map.json", {}); found, missing = set(), []
     for f in files:
         f = str(Path(f))
         if TEST.search(f): found.add(f)
         elif f in tm: found.update(tm[f])
         elif lang_of(Path(f)) in ("python", "php", "typescript", "javascript", "matlab"): missing.append(f)
+    return found, missing
+
+
+def tests_for():
+    ap = argparse.ArgumentParser(); ap.add_argument("files", nargs="*"); ap.add_argument("--changed", action="store_true")
+    ap.add_argument("--run", action="store_true"); ap.add_argument("--root")
+    a = ap.parse_args(); root = find_root(a.root); cfg = load_config(root)
+    files = [str(f) for f in tracked_files(root, True, False, cfg["check"].get("base"))] if a.changed else a.files
+    found, missing = covering_tests(root, files)
     for t in sorted(found): print(t)
     for f in missing: print(f"no test found for {f}  (T1: add one, or run `ff map` if tests were just added)")
     if a.run and found:

@@ -17,7 +17,7 @@ SCHEMA = {
     "commands": {**{k: str for k in STEPS}, "test_one": str, "test_note": str},
     "limits": {k: int for k in ("max_function_lines", "max_file_lines", "max_params", "max_line_length", "dup_window")},
     "commit": {"style": str, "max_subject": int},
-    "check": {"secrets": bool, "base": str, "ui": bool},
+    "check": {"secrets": bool, "base": str, "ui": bool, "test_timeout": int, "scoped_test_timeout": int},
     "coverage": {"report": str, "min": int},
     "mutation": {"critical": list, "command": str},
     "frontend": {"product": str, "design": str},

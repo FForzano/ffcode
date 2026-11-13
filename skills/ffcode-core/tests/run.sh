@@ -30,6 +30,19 @@ $FF commitmsg "feat(x): add y" >/dev/null || fail commitmsg-ok
 $FF commitmsg "Added y." >/dev/null && fail commitmsg-bad
 $FF check --changed >/dev/null || true
 $FF refs f | grep -q "usage" || fail refs
+# scoped tests and timeouts in ff check
+printf '[commands]\ntest = "echo FULL"\ntest_one = "echo ONE {files}"\n[check]\nbase = "main"\n' > .ffcode/config.toml
+echo "# touch" >> pkg/a.py; git add pkg/a.py
+$FF check --staged --only test | grep -q "^RESULT: OK" || fail check-scoped-ok
+$FF check --staged --only test | grep -q "FULL" && fail check-scoped-ran-full
+printf '[commands]\ntest = "echo FULL"\n' > .ffcode/config.toml
+$FF check --staged --only test | grep -q "no \[commands\] test_one" || fail check-fallback-note
+printf '[commands]\ntest = "sleep 5"\n[check]\ntest_timeout = 1\n' > .ffcode/config.toml
+out=$($FF check --only test) && rc=0 || rc=$?
+[ "$rc" = 3 ] && grep -q "^TIMEOUT" <<<"$out" && grep -q "UNVERIFIED (test)" <<<"$out" || fail check-timeout
+printf '[commands]\ntest = "exit 1"\n' > .ffcode/config.toml
+$FF check --only test >/dev/null && fail check-fail-exit
+git reset -q pkg/a.py; git checkout -q pkg/a.py; $FF init >/dev/null 2>&1 || true
 $FF adr "Use X" | grep -q "0001-use-x" || fail adr
 echo "boom at pkg/a.py:4" | $FF debug log - | grep -q "frames" || fail debug
 $FF untested --base HEAD >/dev/null || true
