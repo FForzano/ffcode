@@ -25,6 +25,7 @@ skills/ffcode-core/tests/run.sh   # smoke tests
 **After installing, run `ff hooks install`** (`install.sh` asks and does it for you; `--hooks` / `--no-hooks` skip the question). Without them the update check, map refresh and end-of-turn lint do not run on their own. `ff hooks status` tells whether they are installed; until they are, `ff orient` reminds Claude to tell you, at most once a week (`FFCODE_NO_HOOKS_HINT=1` silences it).
 `ff hooks install` (run by you, once per machine; `--project` for one repo, `--remove` undoes it) adds two Claude Code hooks so the routine steps do not depend on Claude remembering them:
 - **SessionStart**: weekly update check (silent, offline-safe; if there are new commits Claude lists them and **asks**; only on a yes it runs `update-check --apply`), refreshes a stale `.ffcode/map.md`, one status line. Silent outside `.ffcode/` projects.
+- **UserPromptSubmit** (also in projects without `.ffcode/`): when the session's context passes ~150k tokens (`FFCODE_CONTEXT_NUDGE_K`; again every +100k; `FFCODE_NO_CONTEXT_NUDGE=1` turns it off) Claude is told to suggest `/compact` or a fresh session once, because every turn re-reads the whole context.
 - **Stop**: `ff lint --changed` on the diff; blocks once, only when the findings differ from the last report.
 
 Without the hooks, `ffcode-core` tells Claude to run `ff update-check` itself. `ff hooks git` (also run by `ffcode-init`) refreshes the map in the background after pull/checkout/rebase. `FFCODE_NO_UPDATE_CHECK=1` disables the update check.

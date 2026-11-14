@@ -36,10 +36,47 @@ def _session_id(d):
     return str(d.get("session_id") or "")
 
 
+def _context_tokens(path):
+    """Tokens the model read on the last turn (= the context every further turn re-reads), from the end of the transcript."""
+    try:
+        with open(path, "rb") as f:
+            f.seek(0, 2); f.seek(max(0, f.tell() - 600_000))
+            lines = f.read().decode("utf-8", "replace").splitlines()
+    except OSError: return 0
+    for l in reversed(lines):
+        if '"usage"' not in l or '"assistant"' not in l: continue
+        try: o = json.loads(l)
+        except ValueError: continue
+        u = (o.get("message") or {}).get("usage") or {}
+        if o.get("type") == "assistant" and not o.get("isSidechain") and u:
+            return sum(int(u.get(k) or 0) for k in ("input_tokens", "cache_read_input_tokens", "cache_creation_input_tokens"))
+    return 0
+
+
+def context_nudge(d):
+    """Long sessions are the main token cost: every turn re-reads the whole context. At FFCODE_CONTEXT_NUDGE_K (default 150) thousand tokens, then every +100k, tell Claude to suggest /compact or a fresh session once.
+    Works in any project (the hooks are user-level). FFCODE_NO_CONTEXT_NUDGE=1 disables it."""
+    if os.environ.get("FFCODE_NO_CONTEXT_NUDGE") or not d.get("transcript_path"): return
+    first = int(os.environ.get("FFCODE_CONTEXT_NUDGE_K", "150")) * 1000
+    n = _context_tokens(d["transcript_path"])
+    f = CACHE / "ctx" / (_session_id(d) or "none")
+    try: nxt = int(f.read_text())
+    except (OSError, ValueError): nxt = first
+    if n < first * 2 // 3:                        # after /compact or /clear the thresholds start again
+        if nxt != first: f.write_text(str(first))
+        return
+    if n < nxt: return
+    f.parent.mkdir(parents=True, exist_ok=True); f.write_text(str(n + 100_000))
+    print(f"ffcode: this session's context is ~{n // 1000}k tokens and every further turn re-reads all of it (it is what drains the weekly limit). "
+          "At a natural pause (never mid-step) tell the user, in one line, that /compact now (or saving the state in .ffcode/state.md or a short note and starting a new session) "
+          "would cut the cost of the following turns; if they decline, carry on and do not repeat it.")
+
+
 def prompt():
     """UserPromptSubmit: what it prints is added to the prompt's context."""
     import re
     d = _stdin()
+    context_nudge(d)
     root = find_root(d.get("cwd") or None)
     names_skill = bool(re.search(r"(?<![\w-])/?ffcode(?:-[a-z]+)?\b", d.get("prompt") or ""))
     if not (root / DIRNAME).is_dir() and not names_skill: return 0
@@ -86,8 +123,10 @@ def _settings_path(project):
     return (Path.cwd() / ".claude" / "settings.json") if project else Path.home() / ".claude" / "settings.json"
 
 
-def _ours(entry):
-    return any(str(FF) in h.get("command", "") and (" hook " in h.get("command", "")) for h in entry.get("hooks", []))
+def _ours(entry, strict=False):
+    """An ffcode hook entry. Not strict: also one from another location of the repo (moved or reinstalled), so install/remove replace it."""
+    mark = str(FF) if strict else "ffcode-core/scripts/ff"
+    return any(mark in h.get("command", "") and (" hook " in h.get("command", "")) for h in entry.get("hooks", []))
 
 
 def installed():
@@ -95,7 +134,7 @@ def installed():
     for scope, p in (("user", _settings_path(False)), ("project", _settings_path(True))):
         try: data = json.loads(p.read_text())
         except (OSError, ValueError): continue
-        if any(_ours(e) for ev in EVENTS for e in data.get("hooks", {}).get(ev, [])): return scope
+        if any(_ours(e, strict=True) for ev in EVENTS for e in data.get("hooks", {}).get(ev, [])): return scope
     return None
 
 
