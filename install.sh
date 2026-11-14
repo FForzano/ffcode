@@ -52,5 +52,14 @@ if [ "$action" != uninstall ]; then
     if [ "$hooks" = ask ] && [ -t 0 ]; then read -r -p "Install them now into ~/.claude/settings.json? (backup kept; undo: ff hooks install --remove) [Y/n] " ans; case "${ans:-y}" in [nN]*) hooks=no ;; *) hooks=yes ;; esac; fi
     if [ "$hooks" = yes ]; then "$BIN/ff" hooks install; else echo "  later: ff hooks install"; fi
   fi
-  echo "New Claude Code session needed to pick up the skills."
+  if ! command -v llmx >/dev/null 2>&1 && [ ! -e "${CLAUDE_SKILLS_DIR:-$HOME/.claude/skills}/llmx" ]; then
+  cat <<'EOT'
+Optional: llmx lets these skills offload bulk sub-tasks to a local or cheap model (Claude still verifies). Not installed.
+  needs: python3 >= 3.11 + a model server (llama.cpp, Ollama or LM Studio) or a cheap cloud API key
+  costs: a local model is ~18 GB of disk and ~19-21 GB of RAM while running (auto-stops after 10 idle minutes); weaker and slower than Claude
+  cloud endpoints send text to a third party (off by default)
+  install: git clone https://github.com/FForzano/llmx && cd llmx && ./install.sh && llmx init
+EOT
+fi
+echo "New Claude Code session needed to pick up the skills."
 fi

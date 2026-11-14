@@ -9,8 +9,10 @@ from common import DIRNAME, SCHEMA, find_root, git
 
 
 def main():
-    ap = argparse.ArgumentParser(); ap.add_argument("--map-lines", type=int, default=200); ap.add_argument("--no-map", action="store_true"); ap.add_argument("--root")
+    ap = argparse.ArgumentParser(); ap.add_argument("--map-lines", type=int, default=200); ap.add_argument("--no-map", action="store_true"); ap.add_argument("--root"); ap.add_argument("--dismiss-llmx", action="store_true")
     a = ap.parse_args()
+    if a.dismiss_llmx:
+        import hooks; hooks.llmx_hint_due(dismiss=True); print("llmx hint dismissed"); return 0
     root = find_root(a.root); d = root / DIRNAME
     import sync
     is_repo = (root / ".git").exists()
@@ -22,6 +24,7 @@ def main():
     if out: print(out)
     import hooks
     if hooks.hint_due(): print("NOTE: " + hooks.HINT)
+    if hooks.llmx_hint_due(): print("NOTE: " + hooks.LLMX_HINT)
     import upgrade
     if upgrade.version(root) < SCHEMA: print(f"NOTE: .ffcode/ is schema {upgrade.version(root)}, current {SCHEMA} (automatic upgrade is disabled): run `ff upgrade`")
     for name in ("context", "style", "state", "rules"):

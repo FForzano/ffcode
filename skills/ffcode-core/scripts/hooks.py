@@ -109,6 +109,26 @@ def hint_due():
     return True
 
 
+def llmx_installed():
+    return bool(shutil.which("llmx")) or (Path(os.environ.get("CLAUDE_SKILLS_DIR") or Path.home() / ".claude" / "skills") / "llmx").exists()
+
+
+def llmx_hint_due(dismiss=False):
+    """True at most once a month while llmx is not installed; never after `ff orient --dismiss-llmx` or with FFCODE_NO_LLMX_HINT."""
+    off = CACHE / "llmx-hint-off"
+    if dismiss:
+        off.parent.mkdir(parents=True, exist_ok=True); off.write_text("1"); return False
+    if os.environ.get("FFCODE_NO_LLMX_HINT") or off.exists() or llmx_installed(): return False
+    f = CACHE / "llmx-hint"
+    import time
+    if f.is_file() and time.time() - f.stat().st_mtime < 30 * 24 * 3600: return False
+    f.parent.mkdir(parents=True, exist_ok=True); f.write_text("1")
+    return True
+
+
+LLMX_HINT = "llmx (optional) is not installed. It lets these skills hand bulk sub-tasks (log triage, commit drafts, first-pass review scans) to a local or cheap model, saving Claude tokens; Claude still verifies everything, and without llmx all skills work as they do now. TELL THE USER ONCE, with these limits, and ask whether they want it: needs python3 >= 3.11 and a model server (llama.cpp `brew install llama.cpp`, Ollama or LM Studio) or a cheap cloud API key; a local model is ~18 GB of disk (downloaded on first use) and ~19-21 GB of RAM while it runs (llmx stops it after 10 idle minutes), slower than Claude and weaker, so its output is only candidates; cloud endpoints send the text to a third party (off by default; never for unpublished work or secrets). Install: `git clone https://github.com/FForzano/llmx && cd llmx && ./install.sh && llmx init`. If the user declines, run `ff orient --dismiss-llmx` so it is not asked again."
+
+
 HINT = "ffcode hooks are not installed: tell the user to run `ff hooks install` once (or `! ff hooks install` in this prompt), then open a new session. It makes the update check, map refresh and the lint at the end of each turn automatic."
 
 
