@@ -46,6 +46,8 @@ Judgment rules only: `ff rules --judge`; one-call orientation: `ff orient`. `ffc
 
 `install.sh` also links the CLI as `~/.local/bin/ff` (`FFCODE_BIN_DIR` to change it; keep that directory in your `PATH`); it points into the installed skill, so every update applies at once, and `--uninstall` removes it.
 
+Optional: the sibling `llmx` skill (`../llmx`) offloads log triage, commit drafts and candidate review scans to local/cheap models; everything works without it.
+
 Needs `python3` ≥ 3.11 (stdlib only), `git`. Open a new Claude Code session afterwards.
 
 ## In a project

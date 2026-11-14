@@ -48,6 +48,8 @@ Language-light (no AST): dynamic dispatch shows as unresolved. `--doctor` says w
 Committed: `config.toml`, `context.md`, `style.md` (conventions), `rules.toml` (deviations the scripts apply), `architecture.toml` (style, layers, naming, allowed imports, conventions; `ff arch`), `arch-answers.toml` and `flow-answers.toml` (interview answers), `flow.toml` (extra entry-point rules), `baseline.json` (legacy findings), `decisions/`, `glossary.md`, `design.toml`, `workspace.toml`, `contracts.lock`.
 Generated and git-ignored: `map.md`, `workspace-map.md`, `flows/`, `cache/` (symbols, tests-map, hotspots, flow, sync), `repos/`, `state.md`. Details of every file: `references/project-files.md`.
 
+Optional offload: skill `llmx`.
+
 Token rule: `ff orient`, then `ff find` for the rest. Do not list or grep the whole tree first.
 
 To change a rule for all projects, edit `references/` here; for one project, `.ffcode/style.md`.

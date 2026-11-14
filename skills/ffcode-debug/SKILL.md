@@ -9,6 +9,7 @@ allowed-tools: Bash(ff:*)
 `ff` (CLI of ffcode-core). First `ff sync --quick` (completes `.ffcode/`, refreshes caches); a NEEDS line is for the developer: mention it, don't block. `ff flow QUERY` shows the chain behind an endpoint or command; `ff flow --impact FILE` what a change reaches.
 
 1. **Compress the evidence, don't paste it.** `ff debug log FILE` (or `cmd 2>&1 | ff debug log -`): error lines, frames inside this repo, tail. Work from that.
+1b. **Optional offload** (`llmx`, see that skill; skip silently if `llmx status` gives the task no endpoint (a stopped but startable one counts: llmx starts it)): a log still long after `ff debug log` → `llmx run log-triage --in FILE --local-only`; use it to point at lines, then read those lines yourself.
 2. **Reproduce first.** Smallest failing test or command (`[commands] test` narrowed to one test). No reproduction → say what is missing; ask for the input/env, don't guess a fix.
 3. **Localise.** `ff find` / `ff refs NAME` to the code in the frames; read those ranges only. Regression with a known good commit → `ff debug bisect GOOD [--cmd "<narrow test>"]` (needs a clean tree; resets afterwards).
 4. **State the cause** in one or two sentences with `file:line` before touching code; check the hypothesis (a log line, an assertion), not just plausibility.
